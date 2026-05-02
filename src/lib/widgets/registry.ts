@@ -3,6 +3,16 @@ import type { UserProfile, WidgetDefinition } from "@/types";
 const always = (_p: UserProfile) => true;
 
 export const WIDGETS: WidgetDefinition[] = [
+  // Essentials — shown first in simple mode
+  {
+    id: "what_you_own",
+    title: "What You Own in 3 Sentences",
+    category: "education",
+    priority: "P0",
+    rationale: "Always shown in simple view — a plain-English summary of your portfolio.",
+    triggers: always,
+  },
+
   // Core
   {
     id: "health_score",
@@ -107,14 +117,6 @@ export const WIDGETS: WidgetDefinition[] = [
       p.answers.experience === "beginner" ||
       p.answers.worry === "market_crashes" ||
       p.answers.worry === "missing_out",
-  },
-  {
-    id: "what_you_own",
-    title: "What You Own in 3 Sentences",
-    category: "education",
-    priority: "P1",
-    rationale: "Surfaced because you're new to investing — a one-paragraph summary of your portfolio.",
-    triggers: (p) => p.answers.experience === "beginner",
   },
   {
     id: "stock_explorer",

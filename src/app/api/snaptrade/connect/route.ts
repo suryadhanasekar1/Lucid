@@ -8,6 +8,7 @@ const RPM = Number(process.env.RATE_LIMIT_SNAPTRADE_RPM ?? 10);
 const bodySchema = z.object({
   userId: z.string().min(8).max(128),
   userSecret: z.string().min(8).max(256),
+  redirectUri: z.string().url().optional(),
 });
 
 export async function POST(req: Request) {
@@ -30,9 +31,19 @@ export async function POST(req: Request) {
 
   try {
     const client = snaptrade();
+    const fallbackRedirect = new URL("/connect/callback", req.url).toString();
+    const customRedirect =
+      validCallbackRedirect(parsed.data.redirectUri, req.url) ??
+      process.env.SNAPTRADE_REDIRECT_URI ??
+      fallbackRedirect;
     const res = await client.authentication.loginSnapTradeUser({
       userId: parsed.data.userId,
       userSecret: parsed.data.userSecret,
+      customRedirect,
+      connectionType: "read",
+      showCloseButton: true,
+      darkMode: true,
+      connectionPortalVersion: "v4",
     });
     // SDK returns either { redirectURI } or session data. We forward the redirect URI.
     const data = res.data as { redirectURI?: string };
@@ -42,5 +53,19 @@ export async function POST(req: Request) {
       { error: "snaptrade_unavailable", message: (err as Error).message },
       { status: 502 },
     );
+  }
+}
+
+function validCallbackRedirect(candidate: string | undefined, requestUrl: string) {
+  if (!candidate) return null;
+  const requestOrigin = new URL(requestUrl).origin;
+  try {
+    const url = new URL(candidate);
+    if (url.origin !== requestOrigin || url.pathname !== "/connect/callback") {
+      return null;
+    }
+    return url.toString();
+  } catch {
+    return null;
   }
 }

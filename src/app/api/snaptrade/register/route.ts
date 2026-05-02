@@ -30,6 +30,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "bad_request", details: parsed.error.flatten() }, { status: 400 });
   }
 
+  const envUserId = process.env.SNAPTRADE_USER_ID;
+  const envUserSecret = process.env.SNAPTRADE_USER_SECRET;
+  if (envUserId && envUserSecret) {
+    return NextResponse.json({ userId: envUserId, userSecret: envUserSecret });
+  }
+
   try {
     const client = snaptrade();
     const res = await client.authentication.registerSnapTradeUser({

@@ -6,6 +6,7 @@ const SIMPLE_WIDGET_IDS = new Set([
   "health_score",
   "portfolio_history",
   "stock_explorer",
+  "what_you_own",
 ]);
 
 const ADVANCED_WIDGET_IDS = new Set([
@@ -16,7 +17,6 @@ const ADVANCED_WIDGET_IDS = new Set([
   "mutual_fund_xray",
   "macro_conditions",
   "sector_exposure",
-  "what_you_own",
   "cost_tax_receipt",
   "compare_to_index",
   "weekly_digest",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { usePortfolioStore } from "@/stores/portfolioStore";
 import { hashKey } from "@/lib/utils";
@@ -22,32 +22,45 @@ interface ConnectResponse {
 export function ConnectClient() {
   const router = useRouter();
   const profile = useUserStore((s) => s.profile);
+  const snaptrade = usePortfolioStore((s) => s.snaptrade);
   const setSnaptrade = usePortfolioStore((s) => s.setSnaptrade);
   const [status, setStatus] = useState<Status>("idle");
   const [reason, setReason] = useState<string | null>(null);
+  const didAutoStart = useRef(false);
 
-  const localUserId = `compass_${hashKey(profile?.completedAt ?? Date.now().toString())}`;
+  const localUserId = useMemo(
+    () => `compass_${hashKey(profile?.completedAt ?? Date.now().toString())}`,
+    [profile?.completedAt],
+  );
 
-  const startConnect = async () => {
+  const startConnect = useCallback(async () => {
     setStatus("registering");
     setReason(null);
     try {
-      const regRes = await fetch("/api/snaptrade/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: localUserId }),
-      });
-      const reg: RegisterResponse = await regRes.json();
-      if (!regRes.ok || !reg.userId || !reg.userSecret) {
-        throw new Error(reg.error ?? "register_failed");
+      let creds = snaptrade;
+      if (!creds) {
+        const regRes = await fetch("/api/snaptrade/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: localUserId }),
+        });
+        const reg: RegisterResponse = await regRes.json();
+        if (!regRes.ok || !reg.userId || !reg.userSecret) {
+          throw new Error(reg.error ?? "register_failed");
+        }
+        creds = { userId: reg.userId, userSecret: reg.userSecret };
+        setSnaptrade(creds);
       }
-      setSnaptrade({ userId: reg.userId, userSecret: reg.userSecret });
 
       setStatus("redirecting");
       const conRes = await fetch("/api/snaptrade/connect", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: reg.userId, userSecret: reg.userSecret }),
+        body: JSON.stringify({
+          userId: creds.userId,
+          userSecret: creds.userSecret,
+          redirectUri: `${window.location.origin}/connect/callback`,
+        }),
       });
       const con: ConnectResponse = await conRes.json();
       if (!conRes.ok || !con.redirectURI) {
@@ -55,12 +68,18 @@ export function ConnectClient() {
       }
       window.location.href = con.redirectURI;
     } catch (err) {
-      // Silent fallback: keep going to the dashboard with the sample portfolio.
-      setStatus("fallback");
+      setStatus("error");
       setReason((err as Error).message);
-      setTimeout(() => router.push("/dashboard"), 600);
     }
-  };
+  }, [localUserId, setSnaptrade, snaptrade]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || didAutoStart.current) return;
+    const searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.get("start") !== "1") return;
+    didAutoStart.current = true;
+    void startConnect();
+  }, [startConnect]);
 
   const skip = () => {
     setStatus("fallback");
@@ -100,6 +119,13 @@ export function ConnectClient() {
           <p style={{ ...helper, marginTop: "var(--space-6)", color: "var(--text-tertiary)" }}>
             Falling back to a sample portfolio
             {reason ? <> ({reason})</> : null}. Redirecting…
+          </p>
+        )}
+
+        {status === "error" && (
+          <p style={{ ...helper, marginTop: "var(--space-6)", color: "var(--signal-warning)" }}>
+            Couldn&apos;t open SnapTrade
+            {reason ? <> ({reason})</> : null}. Check the SnapTrade keys and try again, or use the sample portfolio.
           </p>
         )}
       </section>

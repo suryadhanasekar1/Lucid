@@ -46,7 +46,7 @@ export const WIDGET_SIZES: Record<string, WidgetSize> = {
   mutual_fund_xray: { w: 6, h: 8, minW: 4, minH: 6 },
   macro_conditions: { w: 6, h: 8, minW: 4, minH: 6 },
   what_you_own: { w: 6, h: 6, minW: 4, minH: 5 },
-  stock_explorer: { w: 6, h: 12, minW: 5, minH: 10 },
+  stock_explorer: { w: 6, h: 14, minW: 5, minH: 12 },
   sector_exposure: { w: 6, h: 6, minW: 4, minH: 5 },
 
   // Mechanics
@@ -70,12 +70,12 @@ export function sizeFor(id: string): WidgetSize {
 /**
  * Initial placement.
  *
- * Two-pass algorithm:
+ * Three-pass algorithm for balanced column layout:
  *   1. Sort widgets by `minH` ascending — short, flexible widgets settle first;
- *      tall, rigid widgets sink to the bottom (the user requested this).
- *      Ties broken by the input order (recommender priority).
- *   2. Pack each widget left-to-right, top-to-bottom, into the first slot
- *      where it fits without overlap. Width = `w` from sizeFor(id).
+ *      tall, rigid widgets sink to the bottom.
+ *   2. Distribute across two columns (left: x=0-5, right: x=6-11) to prevent
+ *      everything stacking on the left and hiding content on the right.
+ *   3. Within each column, place top-to-bottom.
  */
 export function buildInitialLayout(ids: string[]): GridLayoutItem[] {
   const sorted = [...ids]
@@ -86,8 +86,15 @@ export function buildInitialLayout(ids: string[]): GridLayoutItem[] {
     });
 
   const placed: GridLayoutItem[] = [];
+  let leftY = 0;
+  let rightY = 0;
+
   for (const { id, size } of sorted) {
-    const { x, y } = nextFreeSlot(placed, size.w, size.h);
+    // Alternate between left and right columns based on which is lower
+    const useLeft = leftY <= rightY;
+    const x = useLeft ? 0 : 6;
+    const y = useLeft ? leftY : rightY;
+
     placed.push({
       i: id,
       x,
@@ -97,6 +104,12 @@ export function buildInitialLayout(ids: string[]): GridLayoutItem[] {
       minW: size.minW,
       minH: size.minH,
     });
+
+    if (useLeft) {
+      leftY += size.h;
+    } else {
+      rightY += size.h;
+    }
   }
   // RGL works best when items are returned in row order (top-to-bottom,
   // left-to-right). Sort the final layout by (y, x) so callers don't need

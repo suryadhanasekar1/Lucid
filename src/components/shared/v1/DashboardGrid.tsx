@@ -1,6 +1,13 @@
 "use client";
 
-import { useState, useEffect, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import GridLayout, { type Layout, WidthProvider } from "react-grid-layout";
 import { motion } from "framer-motion";
 import { useWidgets } from "@/hooks/useWidgets";
@@ -19,8 +26,10 @@ interface Props {
 }
 
 const ROW_HEIGHT = 56;
+const GRID_MARGIN_Y = 16;
 const MOBILE_BREAKPOINT = 768;
 const DRAG_HANDLE_CLASS = "compass-drag-handle";
+const CONTENT_FIT_PADDING = 8;
 
 /**
  * DashboardGrid
@@ -46,6 +55,10 @@ export function DashboardGrid({ cells }: Props) {
   const [mounted, setMounted] = useState(false);
   const reducedMotion = usePrefersReducedMotion();
   const [isMobile, setIsMobile] = useState(false);
+  const [contentRowsById, setContentRowsById] = useState<Record<string, number>>({});
+  const cellRefs = useRef(new Map<string, HTMLDivElement>());
+  const measureFrame = useRef<number | null>(null);
+  const cellIdsKey = cells.map((cell) => cell.id).join("|");
 
   useEffect(() => {
     setMounted(true);
@@ -56,6 +69,110 @@ export function DashboardGrid({ cells }: Props) {
     mq.addEventListener("change", apply);
     return () => mq.removeEventListener("change", apply);
   }, []);
+
+  const setCellRef = useCallback(
+    (id: string) => (node: HTMLDivElement | null) => {
+      if (node) {
+        cellRefs.current.set(id, node);
+      } else {
+        cellRefs.current.delete(id);
+      }
+    },
+    [],
+  );
+
+  const measureAndFitContent = useCallback(() => {
+    if (!mounted || isMobile) return;
+
+    const nextRows: Record<string, number> = {};
+    for (const { id } of cells) {
+      const node = cellRefs.current.get(id);
+      if (!node) continue;
+      const size = sizeFor(id);
+      const measured = node.querySelector("article") ?? node;
+      const visibleHeight = Math.ceil(measured.getBoundingClientRect().height);
+      const scrollHeight = Math.ceil((measured as HTMLElement).scrollHeight);
+
+      nextRows[id] =
+        scrollHeight > visibleHeight + 1
+          ? Math.max(size.minH, rowsForPixelHeight(scrollHeight + CONTENT_FIT_PADDING))
+          : size.minH;
+    }
+
+    setContentRowsById((prev) => {
+      const prevKeys = Object.keys(prev);
+      const nextKeys = Object.keys(nextRows);
+      if (
+        prevKeys.length === nextKeys.length &&
+        nextKeys.every((key) => prev[key] === nextRows[key])
+      ) {
+        return prev;
+      }
+      return nextRows;
+    });
+
+    let changed = false;
+    const nextLayout = layout.map((item) => {
+      const size = sizeFor(item.i);
+      const contentMinH = nextRows[item.i] ?? size.minH;
+      const minH = Math.max(size.minH, contentMinH);
+      const h = Math.max(item.h, minH);
+      if (item.h !== h || item.minH !== minH) changed = true;
+      return {
+        ...item,
+        h,
+        minH,
+        minW: Math.max(item.minW ?? size.minW, size.minW),
+      };
+    });
+
+    if (changed) {
+      updateLayout(nextLayout);
+    }
+  }, [cells, isMobile, layout, mounted, updateLayout]);
+
+  const scheduleMeasure = useCallback(() => {
+    if (typeof window === "undefined") return;
+    if (measureFrame.current !== null) return;
+    measureFrame.current = window.requestAnimationFrame(() => {
+      measureFrame.current = null;
+      measureAndFitContent();
+    });
+  }, [measureAndFitContent]);
+
+  useLayoutEffect(() => {
+    measureAndFitContent();
+  }, [measureAndFitContent]);
+
+  useEffect(() => {
+    if (!mounted || isMobile || typeof window === "undefined") return;
+    const mutationObserver = new MutationObserver(scheduleMeasure);
+    const resizeObserver = new ResizeObserver(scheduleMeasure);
+
+    for (const node of cellRefs.current.values()) {
+      mutationObserver.observe(node, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+      });
+      resizeObserver.observe(node);
+      const article = node.querySelector("article");
+      if (article) resizeObserver.observe(article);
+    }
+
+    window.addEventListener("resize", scheduleMeasure);
+    scheduleMeasure();
+
+    return () => {
+      mutationObserver.disconnect();
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", scheduleMeasure);
+      if (measureFrame.current !== null) {
+        window.cancelAnimationFrame(measureFrame.current);
+        measureFrame.current = null;
+      }
+    };
+  }, [cellIdsKey, isMobile, mounted, scheduleMeasure]);
 
   // SSR + mobile: a CSS grid that always reflows to a single column.
   if (!mounted || isMobile) {
@@ -84,13 +201,14 @@ export function DashboardGrid({ cells }: Props) {
   const rgl: Layout[] = cells.map((c) => {
     const found = layout.find((l) => l.i === c.id);
     const size = sizeFor(c.id);
+    const minH = Math.max(size.minH, contentRowsById[c.id] ?? size.minH);
     if (found) {
       return {
         ...found,
         w: Math.max(found.w, size.minW),
-        h: Math.max(found.h, size.minH),
+        h: Math.max(found.h, minH),
         minW: size.minW,
-        minH: size.minH,
+        minH,
       };
     }
     return {
@@ -98,9 +216,9 @@ export function DashboardGrid({ cells }: Props) {
       x: 0,
       y: Infinity,
       w: size.w,
-      h: size.h,
+      h: Math.max(size.h, minH),
       minW: size.minW,
-      minH: size.minH,
+      minH,
     };
   });
 
@@ -121,7 +239,7 @@ export function DashboardGrid({ cells }: Props) {
         useCSSTransforms
       >
         {cells.map(({ id, node }, i) => (
-          <div key={id} style={{ position: "relative" }}>
+          <div key={id} ref={setCellRef(id)} style={{ position: "relative" }}>
             <motion.div
               initial={reducedMotion ? false : { opacity: 0, y: 6 }}
               animate={reducedMotion ? undefined : { opacity: 1, y: 0 }}
@@ -170,4 +288,8 @@ export function DashboardGrid({ cells }: Props) {
       </ResponsiveGrid>
     </div>
   );
+}
+
+function rowsForPixelHeight(height: number) {
+  return Math.max(1, Math.ceil((height + GRID_MARGIN_Y) / (ROW_HEIGHT + GRID_MARGIN_Y)));
 }

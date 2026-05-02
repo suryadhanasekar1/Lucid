@@ -64,7 +64,7 @@ export function DashboardClient() {
     );
   }
 
-  const cells = [...recommended].sort(widgetDisplayOrder).map((w) => {
+  const cells = recommended.map((w) => {
     const Component = REAL_WIDGETS[w.id];
     const def = WIDGETS_BY_ID[w.id];
     return {
@@ -135,7 +135,7 @@ export function DashboardClient() {
         >
           <span>Viewing the sample portfolio.</span>
           <Link
-            href="/connect"
+            href="/connect?start=1"
             style={{
               color: "var(--gold-primary)",
               textDecoration: "none",
@@ -170,16 +170,6 @@ export function DashboardClient() {
       </section>
     </main>
   );
-}
-
-function widgetDisplayOrder(a: { id: string }, b: { id: string }) {
-  const pinned = ["total_value", "health_score", "portfolio_history", "stock_explorer"];
-  const ai = pinned.indexOf(a.id);
-  const bi = pinned.indexOf(b.id);
-  if (ai !== -1 || bi !== -1) {
-    return (ai === -1 ? Number.POSITIVE_INFINITY : ai) - (bi === -1 ? Number.POSITIVE_INFINITY : bi);
-  }
-  return 0;
 }
 
 function profileSummary(profile: ReturnType<typeof useUserProfile>["profile"]) {

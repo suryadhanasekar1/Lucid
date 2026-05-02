@@ -94,10 +94,14 @@ export function useWidgets(): {
       setLayout(
         next.map((item) => {
           const size = sizeFor(item.i);
+          const minH = Math.max(item.minH ?? size.minH, size.minH);
+          const minW = Math.max(item.minW ?? size.minW, size.minW);
           return {
             ...item,
-            minW: item.minW ?? size.minW,
-            minH: item.minH ?? size.minH,
+            w: Math.max(item.w, minW),
+            h: Math.max(item.h, minH),
+            minW,
+            minH,
           };
         }),
       );
