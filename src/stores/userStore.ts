@@ -4,6 +4,7 @@ import type { SurveyAnswers, UIMode, UserProfile } from "@/types";
 
 export const SURVEY_STEPS = [
   "welcome",
+  "name",
   "experience",
   "goal",
   "timeline",

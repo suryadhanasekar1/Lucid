@@ -6,6 +6,7 @@ export function buildDemoProfile(): UserProfile {
 
   return {
     answers: {
+      name: "there",
       experience: "beginner",
       goal: "build long-term savings",
       timelineYears: 10,

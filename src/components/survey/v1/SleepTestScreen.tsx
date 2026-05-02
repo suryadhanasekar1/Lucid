@@ -94,7 +94,7 @@ export function SleepTestScreen({
             marginBottom: "var(--space-3)",
           }}
         >
-          Step 4 of 8 · The Sleep Test
+          Step 5 of 9 · The Sleep Test
         </p>
         <h1
           style={{

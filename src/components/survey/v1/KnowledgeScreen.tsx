@@ -15,7 +15,7 @@ interface Props {
 export function KnowledgeScreen({ value, onChange, onNext, onBack }: Props) {
   return (
     <QuestionLayout
-      eyebrow="Step 8 of 9"
+      eyebrow="Step 9 of 9"
       title="How would you describe your investing knowledge?"
       footer={
         <>

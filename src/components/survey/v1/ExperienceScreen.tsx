@@ -15,7 +15,7 @@ interface Props {
 export function ExperienceScreen({ value, onChange, onNext, onBack }: Props) {
   return (
     <QuestionLayout
-      eyebrow="Step 1 of 8"
+      eyebrow="Step 2 of 9"
       title="How would you describe yourself?"
       footer={
         <>

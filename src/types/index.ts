@@ -27,6 +27,9 @@ export type LifeStage =
 export type UIMode = "essentials" | "investor" | "analyst";
 
 export interface SurveyAnswers {
+  /** First name or nickname captured at the start of the survey. Optional for
+   * backward compat with profiles created before this field existed. */
+  name?: string;
   experience: ExperienceLevel;
   goal: string;
   goalChips?: string[];

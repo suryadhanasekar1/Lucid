@@ -15,7 +15,7 @@ interface Props {
 export function CheckInScreen({ value, onChange, onNext, onBack }: Props) {
   return (
     <QuestionLayout
-      eyebrow="Step 6 of 8"
+      eyebrow="Step 7 of 9"
       title="How often will you check in?"
       footer={
         <>

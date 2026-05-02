@@ -15,7 +15,7 @@ export function TimelineScreen({ value, onChange, onNext, onBack }: Props) {
 
   return (
     <QuestionLayout
-      eyebrow="Step 3 of 8"
+      eyebrow="Step 4 of 9"
       title="When do you need this money?"
       footer={
         <>

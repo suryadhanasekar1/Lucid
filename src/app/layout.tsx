@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { GeistSans } from "geist/font/sans";
 import { CircuitBreakerModal } from "@/components/shared/v1/CircuitBreakerModal";
 import { AtlasContainer } from "@/components/atlas/AtlasContainer";
-import { HelloBadge } from "@/components/shared/v1/HelloBadge";
+import { HelloName } from "@/components/shared/v1/HelloName";
 import "@/styles/globals.css";
 
 export const metadata: Metadata = {
@@ -49,7 +49,7 @@ export default function RootLayout({
         {children}
         <CircuitBreakerModal />
         <AtlasContainer />
-        <HelloBadge />
+        <HelloName />
       </body>
     </html>
   );

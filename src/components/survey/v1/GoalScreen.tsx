@@ -29,7 +29,7 @@ export function GoalScreen({ value = "", chips = [], onChange, onNext, onBack }:
 
   return (
     <QuestionLayout
-      eyebrow="Step 2 of 8"
+      eyebrow="Step 3 of 9"
       title="What are you saving for?"
       helper="Type freely or pick a chip — both work."
       footer={

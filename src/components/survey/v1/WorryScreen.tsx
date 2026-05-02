@@ -15,7 +15,7 @@ interface Props {
 export function WorryScreen({ value, onChange, onNext, onBack }: Props) {
   return (
     <QuestionLayout
-      eyebrow="Step 5 of 8"
+      eyebrow="Step 6 of 9"
       title="What's your biggest worry?"
       footer={
         <>

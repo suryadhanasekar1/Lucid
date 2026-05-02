@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { SurveyShell } from "@/components/survey/v1/SurveyShell";
 import { WelcomeScreen } from "@/components/survey/v1/WelcomeScreen";
+import { NameScreen } from "@/components/survey/v1/NameScreen";
 import { ExperienceScreen } from "@/components/survey/v1/ExperienceScreen";
 import { GoalScreen } from "@/components/survey/v1/GoalScreen";
 import { TimelineScreen } from "@/components/survey/v1/TimelineScreen";
@@ -52,6 +53,15 @@ export function OnboardingClient({ initialStep }: Props) {
   return (
     <SurveyShell step={step}>
       {step === "welcome" && <WelcomeScreen onStart={onNext} />}
+
+      {step === "name" && (
+        <NameScreen
+          value={draft.name}
+          onChange={(name) => updateDraft({ name })}
+          onNext={onNext}
+          onBack={onBack}
+        />
+      )}
 
       {step === "experience" && (
         <ExperienceScreen
