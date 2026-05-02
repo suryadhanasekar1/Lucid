@@ -22,14 +22,15 @@ export function useWidgets(): {
   updateLayout: (layout: GridLayout) => void;
 } {
   const profile = useUserStore((s) => s.profile);
+  const uiMode = useUserStore((s) => s.uiMode);
   const active = usePortfolioStore((s) => s.activeWidgets);
   const layout = usePortfolioStore((s) => s.layout);
   const setActiveWidgets = usePortfolioStore((s) => s.setActiveWidgets);
   const setLayout = usePortfolioStore((s) => s.setLayout);
 
   const recommended = useMemo(
-    () => (profile ? recommendWidgets(profile) : []),
-    [profile],
+    () => (profile ? recommendWidgets(profile, uiMode === "analyst" ? "advanced" : "simple") : []),
+    [profile, uiMode],
   );
 
   // Seed the active set + layout the first time a profile shows up.

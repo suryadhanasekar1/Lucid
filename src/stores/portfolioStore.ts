@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
+import type { ActionCard } from "@/lib/agents/portfolioMonitor";
 import type { GridLayout, Holding, PortfolioSource } from "@/types";
 
 interface PortfolioStore {
@@ -15,6 +16,7 @@ interface PortfolioStore {
   // Persistent layout / active widget set, keyed implicitly by current profile.
   activeWidgets: string[];
   layout: GridLayout;
+  actionCards: ActionCard[];
 
   setHoldings: (holdings: Holding[], source: PortfolioSource) => void;
   setLoading: (loading: boolean) => void;
@@ -22,6 +24,9 @@ interface PortfolioStore {
   setSnaptrade: (creds: { userId: string; userSecret: string } | null) => void;
   setActiveWidgets: (ids: string[]) => void;
   setLayout: (layout: GridLayout) => void;
+  addActionCard: (card: ActionCard) => void;
+  dismissActionCard: (id: string) => void;
+  clearActionCards: () => void;
   reset: () => void;
 }
 
@@ -45,6 +50,7 @@ export const usePortfolioStore = create<PortfolioStore>()(
       snaptrade: null,
       activeWidgets: [],
       layout: [],
+      actionCards: [],
 
       setHoldings: (holdings, source) =>
         set({ holdings, source, totalValue: computeTotal(holdings), error: null }),
@@ -53,6 +59,19 @@ export const usePortfolioStore = create<PortfolioStore>()(
       setSnaptrade: (snaptrade) => set({ snaptrade }),
       setActiveWidgets: (activeWidgets) => set({ activeWidgets }),
       setLayout: (layout) => set({ layout }),
+      addActionCard: (card) =>
+        set((s) => ({
+          actionCards: s.actionCards.some((existing) => existing.id === card.id)
+            ? s.actionCards
+            : [card, ...s.actionCards],
+        })),
+      dismissActionCard: (id) =>
+        set((s) => ({
+          actionCards: s.actionCards.map((card) =>
+            card.id === id ? { ...card, dismissed: true } : card,
+          ),
+        })),
+      clearActionCards: () => set({ actionCards: [] }),
       reset: () =>
         set({
           holdings: [],
@@ -63,6 +82,7 @@ export const usePortfolioStore = create<PortfolioStore>()(
           snaptrade: null,
           activeWidgets: [],
           layout: [],
+          actionCards: [],
         }),
     }),
     {
@@ -75,6 +95,7 @@ export const usePortfolioStore = create<PortfolioStore>()(
         snaptrade: state.snaptrade,
         activeWidgets: state.activeWidgets,
         layout: state.layout,
+        actionCards: state.actionCards,
       }),
     },
   ),

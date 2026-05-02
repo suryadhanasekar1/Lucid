@@ -364,3 +364,74 @@ Append a summary after each phase gate passes. **Never advance until the gate pa
   - [x] SECURITY.md complete and accurate
   - [x] Final security audit passed (no keys in git history)
   - [x] All hooks in src/hooks/ match Section 4 contract — UI is swappable (hook count = 11, signatures unchanged)
+
+## Gap-Fill Implementation — Adaptive Modes, Atlas, History, Agents, Public API
+
+- Source prompt: `/Users/suryadhanasekar/Downloads/message (2).txt`
+- Implemented sections:
+  - Section 2: investing knowledge survey question, `uiMode` profile field, adaptive mode store action, `useAdaptiveMode`, and dashboard `UIModeToggle`.
+  - Section 3: `/api/market/history`, `usePortfolioHistory`, and `PortfolioHistory` widget with Recharts periods and UI-mode adaptations.
+  - Section 5: `SectorExposure` widget with simplified essentials labels and full investor/analyst labels.
+  - Section 6: advanced metrics calculations, analyst-mode Health Score metrics, and correlation heatmap.
+  - Section 7: tax-loss harvesting calculation and scenario-adjacent `TaxHarvestAlert`.
+  - Sections 8 and 11: Atlas multi-turn chat, persisted conversation history, confidence badges, demo prompts, and life-event profile adjustment prompt.
+  - Sections 9 and 10: portfolio monitor agent, action card generation, action-card store slice, `runAllAgents`, and `ActionQueue` widget.
+  - Section 12: public `/api/v1/analyze-portfolio` endpoint and `public/api-docs.md`.
+  - Section 13: shared `ExpandableMetric` wrapper wired into Health Score component rows.
+  - Section 14: final registry/dashboard integration; `ActionQueue` is pinned first and `PortfolioHistory` second.
+- Files created:
+  - `COMPASS_MASTER_SPEC.md`
+  - `public/api-docs.md`
+  - `src/app/api/claude/worry/route.ts`
+  - `src/app/api/market/history/route.ts`
+  - `src/app/api/v1/analyze-portfolio/route.ts`
+  - `src/components/shared/v1/ExpandableMetric.tsx`
+  - `src/components/shared/v1/TaxHarvestAlert.tsx`
+  - `src/components/shared/v1/UIModeToggle.tsx`
+  - `src/components/survey/v1/KnowledgeScreen.tsx`
+  - `src/components/widgets/v1/ActionQueue.tsx`
+  - `src/components/widgets/v1/PortfolioHistory.tsx`
+  - `src/components/widgets/v1/SectorExposure.tsx`
+  - `src/hooks/useAdaptiveMode.ts`
+  - `src/hooks/useAdvancedMetrics.ts`
+  - `src/hooks/usePortfolioHistory.ts`
+  - `src/hooks/useSectorExposure.ts`
+  - `src/hooks/useTaxLossOpportunities.ts`
+  - `src/lib/agents/index.ts`
+  - `src/lib/agents/lifeEvent.ts`
+  - `src/lib/agents/portfolioMonitor.ts`
+  - `src/lib/calculations/advancedMetrics.ts`
+- Files materially modified:
+  - `package.json`, `package-lock.json`
+  - `scripts/phase3-test.ts`, `scripts/phase4-test.ts`, `scripts/phase5-test.ts`, `scripts/phase6-test.ts`, `scripts/phase7-test.ts`, `scripts/phase8-test.ts`
+  - `src/app/api/claude/translate-worry/route.ts`
+  - `src/app/dashboard/DashboardClient.tsx`
+  - `src/app/layout.tsx`
+  - `src/app/onboarding/OnboardingClient.tsx`
+  - `src/components/survey/v1/LifeStageScreen.tsx`
+  - `src/components/survey/v1/SummaryScreen.tsx`
+  - `src/components/widgets/v1/HealthScoreWidget.tsx`
+  - `src/components/widgets/v1/QuickScenariosWidget.tsx`
+  - `src/components/widgets/v1/WorryTranslatorWidget.tsx`
+  - `src/hooks/usePortfolio.ts`, `src/hooks/useUserProfile.ts`, `src/hooks/useWorryTranslator.ts`
+  - `src/lib/claude/client.ts`
+  - `src/lib/portfolio/calculations.ts`, `src/lib/portfolio/tax.ts`
+  - `src/lib/widgets/layout.ts`, `src/lib/widgets/registry.ts`
+  - `src/stores/portfolioStore.ts`, `src/stores/userStore.ts`
+  - `src/styles/globals.css`
+  - `src/types/index.ts`
+- Verification completed:
+  - [x] `npm run typecheck`
+  - [x] `npm run build`
+  - [x] `npm run test` (Vitest configured with `--passWithNoTests`; no unit test files exist yet)
+  - [x] `node --import tsx scripts/phase3-test.ts`
+  - [x] `node --import tsx scripts/phase4-test.ts`
+  - [x] `node --import tsx scripts/phase5-test.ts`
+  - [x] `node --import tsx scripts/phase6-test.ts`
+  - [x] `node --import tsx scripts/phase7-test.ts`
+  - [x] `node --import tsx scripts/phase8-test.ts`
+  - [x] `node --import tsx scripts/phase9-test.ts`
+- Notes:
+  - Old phase scripts assumed exactly 11 hook files. The new prompt explicitly adds hooks, so those checks now verify the original Section 4 hook contract is still present while allowing additive hooks.
+  - `npm run build` initially failed because `next/font/google` could not fetch Google Fonts in the offline sandbox. `layout.tsx` and `globals.css` now use offline-safe font stacks while preserving Compass font-role variables.
+  - The previous tracked `COMPASS_MASTER_SPEC (1).md` contained secrets appended at the bottom. It was removed from the working tree and replaced with the clean canonical `COMPASS_MASTER_SPEC.md`; rotate any exposed keys before using them.

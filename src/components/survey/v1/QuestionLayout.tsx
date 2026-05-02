@@ -32,9 +32,10 @@ export function QuestionLayout({ eyebrow, title, helper, children, footer }: Pro
           style={{
             fontFamily: "var(--font-display)",
             fontWeight: 400,
-            fontSize: 36,
+            fontSize: "clamp(30px, 5vw, 36px)",
             lineHeight: 1.15,
-            letterSpacing: "-0.01em",
+            letterSpacing: 0,
+            margin: 0,
           }}
         >
           {title}
@@ -57,7 +58,7 @@ export function QuestionLayout({ eyebrow, title, helper, children, footer }: Pro
       <div>{children}</div>
 
       {footer && (
-        <div style={{ display: "flex", gap: "var(--space-3)" }}>{footer}</div>
+        <div style={{ display: "flex", gap: "var(--space-3)", flexWrap: "wrap" }}>{footer}</div>
       )}
     </section>
   );

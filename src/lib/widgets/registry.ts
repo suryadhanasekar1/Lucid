@@ -13,11 +13,27 @@ export const WIDGETS: WidgetDefinition[] = [
     triggers: always,
   },
   {
+    id: "action_queue",
+    title: "Agent Inbox",
+    category: "planning",
+    priority: "P0",
+    rationale: "Always shown — Compass surfaces the few portfolio actions worth your attention.",
+    triggers: always,
+  },
+  {
     id: "total_value",
     title: "Total Value",
     category: "core",
     priority: "P0",
     rationale: "Always shown — the headline number across your real holdings.",
+    triggers: always,
+  },
+  {
+    id: "portfolio_history",
+    title: "Portfolio Balance History",
+    category: "core",
+    priority: "P0",
+    rationale: "Always shown — tracks how your full portfolio has moved over time, not just today's balance.",
     triggers: always,
   },
   {
@@ -106,6 +122,14 @@ export const WIDGETS: WidgetDefinition[] = [
     category: "education",
     priority: "P1",
     rationale: "Search a stock, inspect the chart, and preview how it might change your portfolio before buying.",
+    triggers: always,
+  },
+  {
+    id: "sector_exposure",
+    title: "Sector & Geographic Exposure",
+    category: "education",
+    priority: "P1",
+    rationale: "Always shown — translates your holdings into sector and location concentration.",
     triggers: always,
   },
 

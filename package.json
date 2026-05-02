@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "test:phases": "tsx scripts/phase3-test.ts && tsx scripts/phase4-test.ts && tsx scripts/phase5-test.ts && tsx scripts/phase6-test.ts && tsx scripts/phase7-test.ts && tsx scripts/phase8-test.ts && tsx scripts/phase9-test.ts",

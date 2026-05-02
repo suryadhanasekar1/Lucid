@@ -65,6 +65,7 @@ export function buildProfile(answers: SurveyAnswers): UserProfile {
   const riskScore = deriveRiskScore(answers.painThreshold, answers.sleepTestStartingValue);
   return {
     answers,
+    uiMode: answers.uiMode,
     riskScore,
     archetype: getArchetype(riskScore),
     completedAt: new Date().toISOString(),

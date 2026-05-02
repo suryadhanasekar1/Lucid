@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { usePortfolio } from "@/hooks/usePortfolio";
@@ -7,39 +8,32 @@ import { useWidgets } from "@/hooks/useWidgets";
 import { DashboardGrid } from "@/components/shared/v1/DashboardGrid";
 import { HealthScoreWidget } from "@/components/widgets/v1/HealthScoreWidget";
 import { TotalValueWidget } from "@/components/widgets/v1/TotalValueWidget";
-import { FoundationFrontierWidget } from "@/components/widgets/v1/FoundationFrontierWidget";
-import { GoalProgressWidget } from "@/components/widgets/v1/GoalProgressWidget";
+import { PortfolioHistoryWidget } from "@/components/widgets/v1/PortfolioHistory";
 import { MacroConditionsWidget } from "@/components/widgets/v1/MacroConditionsWidget";
-import { QuickScenariosWidget } from "@/components/widgets/v1/QuickScenariosWidget";
 import { MutualFundXRayWidget } from "@/components/widgets/v1/MutualFundXRayWidget";
 import { WhatYouOwnWidget } from "@/components/widgets/v1/WhatYouOwnWidget";
 import { StockExplorer } from "@/components/widgets/v1/StockExplorer";
-import { PainThresholdMonitorWidget } from "@/components/widgets/v1/PainThresholdMonitorWidget";
-import { WorryTranslatorWidget } from "@/components/widgets/v1/WorryTranslatorWidget";
-import { HeadlineDecoderWidget } from "@/components/widgets/v1/HeadlineDecoderWidget";
-import { CircuitBreakerWidget } from "@/components/widgets/v1/CircuitBreakerWidget";
+import { SectorExposureWidget } from "@/components/widgets/v1/SectorExposure";
 import { CostTaxReceiptWidget } from "@/components/widgets/v1/CostTaxReceiptWidget";
 import { CompareToIndexWidget } from "@/components/widgets/v1/CompareToIndexWidget";
 import { WeeklyDigestWidget } from "@/components/widgets/v1/WeeklyDigestWidget";
 import { AntiPanicStreakWidget } from "@/components/widgets/v1/AntiPanicStreakWidget";
+import { WorryTranslatorWidget } from "@/components/widgets/v1/WorryTranslatorWidget";
+import { ActionQueueWidget } from "@/components/widgets/v1/ActionQueue";
 import { PlaceholderWidget } from "@/components/widgets/v1/PlaceholderWidget";
 import { ErrorBoundary } from "@/components/shared/v1/ErrorBoundary";
+import { UIModeToggle } from "@/components/shared/v1/UIModeToggle";
 import { WIDGETS_BY_ID } from "@/lib/widgets/registry";
 
 const REAL_WIDGETS: Record<string, () => JSX.Element> = {
   health_score: HealthScoreWidget,
   total_value: TotalValueWidget,
-  foundation_frontier: FoundationFrontierWidget,
-  goal_progress: GoalProgressWidget,
+  portfolio_history: PortfolioHistoryWidget,
   macro_conditions: MacroConditionsWidget,
-  quick_scenarios: QuickScenariosWidget,
   mutual_fund_xray: MutualFundXRayWidget,
   what_you_own: WhatYouOwnWidget,
   stock_explorer: StockExplorer,
-  pain_threshold: PainThresholdMonitorWidget,
-  worry_translator: WorryTranslatorWidget,
-  headline_decoder: HeadlineDecoderWidget,
-  circuit_breaker: CircuitBreakerWidget,
+  sector_exposure: SectorExposureWidget,
   cost_tax_receipt: CostTaxReceiptWidget,
   compare_to_index: CompareToIndexWidget,
   weekly_digest: WeeklyDigestWidget,
@@ -50,6 +44,7 @@ export function DashboardClient() {
   const { profile, isOnboarded } = useUserProfile();
   const { source, loading } = usePortfolio();
   const { recommended } = useWidgets();
+  const [assistantOpen, setAssistantOpen] = useState(false);
 
   if (!isOnboarded || !profile) {
     return (
@@ -69,7 +64,7 @@ export function DashboardClient() {
     );
   }
 
-  const cells = recommended.map((w) => {
+  const cells = [...recommended].sort(widgetDisplayOrder).map((w) => {
     const Component = REAL_WIDGETS[w.id];
     const def = WIDGETS_BY_ID[w.id];
     return {
@@ -107,15 +102,18 @@ export function DashboardClient() {
             .
           </h1>
         </div>
-        <div
-          style={{
-            fontFamily: "var(--font-mono)",
-            fontSize: 12,
-            color: "var(--text-tertiary)",
-            letterSpacing: "0.02em",
-          }}
-        >
-          {loading ? "refreshing…" : profileSummary(profile)}
+        <div style={{ display: "grid", justifyItems: "end", gap: "var(--space-2)" }}>
+          <UIModeToggle />
+          <div
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: 12,
+              color: "var(--text-tertiary)",
+              letterSpacing: "0.02em",
+            }}
+          >
+            {loading ? "refreshing…" : profileSummary(profile)}
+          </div>
         </div>
       </header>
 
@@ -150,8 +148,38 @@ export function DashboardClient() {
       )}
 
       <DashboardGrid cells={cells} />
+
+      <section style={assistantShell} aria-label="Compass assistant">
+        <button
+          type="button"
+          onClick={() => setAssistantOpen((open) => !open)}
+          style={assistantToggle}
+        >
+          {assistantOpen ? "Close Assistant" : "Open Assistant"}
+        </button>
+        {assistantOpen && (
+          <div style={assistantGrid}>
+            <ErrorBoundary title="Atlas Assistant">
+              <WorryTranslatorWidget />
+            </ErrorBoundary>
+            <ErrorBoundary title="Agent Inbox">
+              <ActionQueueWidget />
+            </ErrorBoundary>
+          </div>
+        )}
+      </section>
     </main>
   );
+}
+
+function widgetDisplayOrder(a: { id: string }, b: { id: string }) {
+  const pinned = ["total_value", "health_score", "portfolio_history", "stock_explorer"];
+  const ai = pinned.indexOf(a.id);
+  const bi = pinned.indexOf(b.id);
+  if (ai !== -1 || bi !== -1) {
+    return (ai === -1 ? Number.POSITIVE_INFINITY : ai) - (bi === -1 ? Number.POSITIVE_INFINITY : bi);
+  }
+  return 0;
 }
 
 function profileSummary(profile: ReturnType<typeof useUserProfile>["profile"]) {
@@ -205,4 +233,28 @@ const primaryCta: React.CSSProperties = {
   fontWeight: 500,
   textDecoration: "none",
   marginTop: "var(--space-6)",
+};
+
+const assistantShell: React.CSSProperties = {
+  marginTop: "var(--space-8)",
+  borderTop: "1px solid var(--border-subtle)",
+  paddingTop: "var(--space-6)",
+};
+
+const assistantToggle: React.CSSProperties = {
+  border: "1px solid var(--border-default)",
+  borderRadius: 999,
+  background: "var(--bg-elevated)",
+  color: "var(--gold-primary)",
+  padding: "10px 16px",
+  fontFamily: "var(--font-body)",
+  fontSize: 13,
+  cursor: "pointer",
+};
+
+const assistantGrid: React.CSSProperties = {
+  marginTop: "var(--space-4)",
+  display: "grid",
+  gridTemplateColumns: "minmax(0, 1.2fr) minmax(280px, 0.8fr)",
+  gap: "var(--space-4)",
 };

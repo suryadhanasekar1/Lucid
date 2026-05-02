@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useScenario } from "@/hooks/useScenario";
 import { WidgetCard } from "@/components/shared/v1/WidgetCard";
+import { TaxHarvestAlert } from "@/components/shared/v1/TaxHarvestAlert";
 import { WIDGETS_BY_ID } from "@/lib/widgets/registry";
 import { formatUSD, formatPct } from "@/lib/utils";
 
@@ -129,6 +130,9 @@ export function QuickScenariosWidget() {
                   Grounded in FRED: CPI {current.groundedIn.cpi}% · DFF {current.groundedIn.fedFundsRate}% · 10y {current.groundedIn.treasury10y}%
                 </p>
               )}
+              <div style={{ marginTop: "var(--space-3)" }}>
+                <TaxHarvestAlert />
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

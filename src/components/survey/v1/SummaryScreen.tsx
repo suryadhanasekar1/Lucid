@@ -41,6 +41,12 @@ const LIFE_STAGE_LABEL: Record<SurveyAnswers["lifeStage"], string> = {
   retired: "Retired",
 };
 
+const UI_MODE_LABEL: Record<SurveyAnswers["uiMode"], string> = {
+  essentials: "Simple",
+  investor: "Standard",
+  analyst: "Advanced",
+};
+
 export function SummaryScreen({ answers, riskScore, onBuild, onBack }: Props) {
   const archetype = useArchetype(riskScore);
   const rows: { label: string; value: string }[] = [
@@ -55,6 +61,7 @@ export function SummaryScreen({ answers, riskScore, onBuild, onBack }: Props) {
     { label: "Biggest worry", value: WORRY_LABEL[answers.worry] },
     { label: "Check-in", value: CHECKIN_LABEL[answers.checkIn] },
     { label: "Life stage", value: LIFE_STAGE_LABEL[answers.lifeStage] },
+    { label: "Dashboard mode", value: UI_MODE_LABEL[answers.uiMode] },
   ];
 
   return (

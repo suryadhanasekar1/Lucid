@@ -24,6 +24,8 @@ export type LifeStage =
   | "pre_retirement"
   | "retired";
 
+export type UIMode = "essentials" | "investor" | "analyst";
+
 export interface SurveyAnswers {
   experience: ExperienceLevel;
   goal: string;
@@ -36,6 +38,7 @@ export interface SurveyAnswers {
   worry: Worry;
   checkIn: CheckInFrequency;
   lifeStage: LifeStage;
+  uiMode: UIMode;
 }
 
 export interface Archetype {
@@ -50,6 +53,8 @@ export interface Archetype {
 export interface UserProfile {
   /** All raw survey answers verbatim. */
   answers: SurveyAnswers;
+  /** Dashboard detail level: simple, standard, or advanced. */
+  uiMode: UIMode;
   /** Derived 0-100 risk score from pain_threshold / starting_value. */
   riskScore: number;
   /** Named risk archetype shown after the Sleep Test. */
@@ -73,6 +78,8 @@ export interface Holding {
   price: number;
   /** Optional snapshot of cost basis if SnapTrade returned it. */
   costBasis?: number;
+  /** Optional recent purchase date used for wash-sale warnings. */
+  purchaseDate?: string;
   /** Computed: shares * price. */
   value: number;
   /** Optional pre-computed allocation (0-1). */
@@ -217,6 +224,33 @@ export interface WorryResponse {
   suggestedActions: string[];
   /** Cited macro/fund values used to ground the response. */
   citations: Citation[];
+  confidence?: "low" | "medium" | "high";
+  classification?: string;
+  life_event_detected?: LifeEventDetected | null;
+}
+
+export interface ConversationMessage {
+  role: "user" | "assistant";
+  content: string;
+  timestamp: Date;
+  classification?: string;
+  confidence?: "low" | "medium" | "high";
+}
+
+export interface LifeEventDetected {
+  event: string;
+  adjustment: {
+    riskScoreAdjust: number;
+    allocationShift: Record<string, number>;
+    urgency: string;
+    explanation: string;
+  };
+}
+
+export interface UserGoals {
+  targetAllocation?: Record<string, number>;
+  timeHorizon?: number;
+  riskScore?: number;
 }
 
 export interface Citation {
@@ -300,4 +334,5 @@ export interface MacroSnapshot {
   fedFundsRate: MacroIndicator;
   treasury10y: MacroIndicator;
   mortgage30y: MacroIndicator;
+  vix?: MacroIndicator;
 }

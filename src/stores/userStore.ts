@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import type { SurveyAnswers, UserProfile } from "@/types";
+import type { SurveyAnswers, UIMode, UserProfile } from "@/types";
 
 export const SURVEY_STEPS = [
   "welcome",
@@ -11,6 +11,7 @@ export const SURVEY_STEPS = [
   "worry",
   "check_in",
   "life_stage",
+  "knowledge",
   "summary",
 ] as const;
 
@@ -22,7 +23,9 @@ interface UserStore {
   profile: UserProfile | null;
   draft: SurveyDraft;
   step: SurveyStep;
+  uiMode: UIMode;
   setProfile: (profile: UserProfile) => void;
+  setUiMode: (mode: UIMode) => void;
   resetProfile: () => void;
   updateDraft: (patch: SurveyDraft) => void;
   resetDraft: () => void;
@@ -39,9 +42,16 @@ export const useUserStore = create<UserStore>()(
       profile: null,
       draft: { ...initialDraft },
       step: "welcome",
-      setProfile: (profile) => set({ profile }),
+      uiMode: "essentials",
+      setProfile: (profile) => set({ profile, uiMode: profile.uiMode }),
+      setUiMode: (uiMode) =>
+        set((s) => ({
+          uiMode,
+          draft: { ...s.draft, uiMode },
+          profile: s.profile ? { ...s.profile, uiMode, answers: { ...s.profile.answers, uiMode } } : s.profile,
+        })),
       resetProfile: () =>
-        set({ profile: null, draft: { ...initialDraft }, step: "welcome" }),
+        set({ profile: null, draft: { ...initialDraft }, step: "welcome", uiMode: "essentials" }),
       updateDraft: (patch) =>
         set((s) => ({ draft: { ...s.draft, ...patch } })),
       resetDraft: () => set({ draft: { ...initialDraft }, step: "welcome" }),

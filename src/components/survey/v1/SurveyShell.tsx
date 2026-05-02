@@ -17,10 +17,10 @@ export function SurveyShell({ step, children }: Props) {
   return (
     <main
       style={{
-        minHeight: "100vh",
+        minHeight: "100dvh",
         background: "var(--bg-base)",
         color: "var(--text-primary)",
-        padding: "var(--space-12) var(--space-8)",
+        padding: "clamp(28px, 6vh, 48px) clamp(18px, 5vw, 32px)",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",

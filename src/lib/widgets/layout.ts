@@ -30,7 +30,9 @@ export interface WidgetSize {
 export const WIDGET_SIZES: Record<string, WidgetSize> = {
   // Core
   health_score: { w: 6, h: 9, minW: 4, minH: 8 },
-  total_value: { w: 6, h: 4, minW: 3, minH: 3 },
+  action_queue: { w: 6, h: 5, minW: 4, minH: 4 },
+  total_value: { w: 6, h: 8, minW: 4, minH: 6 },
+  portfolio_history: { w: 6, h: 7, minW: 4, minH: 5 },
   foundation_frontier: { w: 6, h: 4, minW: 4, minH: 3 },
   goal_progress: { w: 6, h: 4, minW: 3, minH: 3 },
 
@@ -45,6 +47,7 @@ export const WIDGET_SIZES: Record<string, WidgetSize> = {
   macro_conditions: { w: 6, h: 8, minW: 4, minH: 6 },
   what_you_own: { w: 6, h: 6, minW: 4, minH: 5 },
   stock_explorer: { w: 6, h: 12, minW: 5, minH: 10 },
+  sector_exposure: { w: 6, h: 6, minW: 4, minH: 5 },
 
   // Mechanics
   cost_tax_receipt: { w: 6, h: 8, minW: 4, minH: 5 },

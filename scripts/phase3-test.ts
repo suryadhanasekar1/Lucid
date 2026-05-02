@@ -30,6 +30,7 @@ const profile = buildProfile({
   worry: "market_crashes",
   checkIn: "monthly",
   lifeStage: "early_career",
+  uiMode: "investor",
 });
 
 const macro = (await getMacroSnapshot()).snapshot;
@@ -109,8 +110,24 @@ translateMortgage(6.8).startsWith("Mortgages are expensive")
   ? ok("mortgage translator mid")
   : fail("mortgage translator mid");
 
-const hooks = fs.readdirSync("src/hooks").filter((f) => f.endsWith(".ts")).length;
-hooks === 11 ? ok("hook count = 11") : fail(`hook count = ${hooks}`);
+const hookFiles = fs.readdirSync("src/hooks").filter((f) => f.endsWith(".ts"));
+const requiredHooks = [
+  "useUserProfile.ts",
+  "usePortfolio.ts",
+  "useHealthScore.ts",
+  "useWidgets.ts",
+  "useScenario.ts",
+  "useWorryTranslator.ts",
+  "useHeadlineDecoder.ts",
+  "useCircuitBreaker.ts",
+  "useFundXRay.ts",
+  "useMacroConditions.ts",
+  "useExplain.ts",
+];
+const missingHooks = requiredHooks.filter((hook) => !hookFiles.includes(hook));
+missingHooks.length === 0
+  ? ok(`original hook contract present (${hookFiles.length} hooks total)`)
+  : fail(`missing original hooks: ${missingHooks.join(", ")}`);
 
 process.exit(pass ? 0 : 1);
 }

@@ -171,11 +171,25 @@ async function main() {
     }
   }
 
-  // ─── Hook count check (Phase 4 keeps registry stable) ─────────────────
+  // ─── Original hook contract check (later gap-fill work can add hooks) ─
   const hooksDir = path.join(process.cwd(), "src/hooks");
   const hookFiles = (await fs.readdir(hooksDir)).filter((f) => f.endsWith(".ts"));
-  if (hookFiles.length === 11) ok(`hook count = ${hookFiles.length}`);
-  else bad(`hook count drifted: ${hookFiles.length}`);
+  const originalHooks = [
+    "useUserProfile.ts",
+    "usePortfolio.ts",
+    "useHealthScore.ts",
+    "useWidgets.ts",
+    "useScenario.ts",
+    "useWorryTranslator.ts",
+    "useHeadlineDecoder.ts",
+    "useCircuitBreaker.ts",
+    "useFundXRay.ts",
+    "useMacroConditions.ts",
+    "useExplain.ts",
+  ];
+  const missingHooks = originalHooks.filter((hook) => !hookFiles.includes(hook));
+  if (missingHooks.length === 0) ok(`original hook contract present (${hookFiles.length} hooks total)`);
+  else bad(`missing original hooks: ${missingHooks.join(", ")}`);
 
   // ─── Hooks no longer return placeholder stubs ─────────────────────────
   for (const file of ["useExplain.ts", "useWorryTranslator.ts", "useHeadlineDecoder.ts"]) {

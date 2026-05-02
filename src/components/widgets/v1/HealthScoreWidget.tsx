@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
 import type { CSSProperties } from "react";
-import { animate, motion, useMotionValue, useReducedMotion, useTransform } from "framer-motion";
-import { Cloud, CloudLightning, CloudSun, Sun } from "lucide-react";
-import { useExplain } from "@/hooks/useExplain";
-import { useHealthScore } from "@/hooks/useHealthScore";
+import { motion, useReducedMotion } from "framer-motion";
+import AnimatedDownloadButton from "@/components/ui/download-hover-button";
+import { ShowMeTheMath } from "@/components/shared/v1/ShowMeTheMath";
 import { WidgetCard } from "@/components/shared/v1/WidgetCard";
-import { WhyIsThisHere } from "@/components/shared/v1/WhyIsThisHere";
+import { useHealthScore } from "@/hooks/useHealthScore";
+import { usePrefersReducedMotion } from "@/lib/a11y";
+import { WIDGETS_BY_ID } from "@/lib/widgets/registry";
 import type { HealthComponents, Weather } from "@/types";
 
 type HealthScoreResult = {
@@ -17,416 +17,118 @@ type HealthScoreResult = {
   loading?: boolean;
 };
 
-type ComponentKey = keyof HealthComponents;
-
-const CARD_TITLE = "Portfolio Health Score";
+const CARD_TITLE = "Portfolio Health";
 const CARD_RATIONALE =
-  "Always shown so you can quickly see whether your portfolio needs attention before making a decision.";
-
-const WEATHER: Record<
-  Weather,
-  {
-    label: string;
-    Icon: typeof Sun;
-    color: string;
-  }
-> = {
-  sunny: {
-    label: "Your portfolio is in great shape.",
-    Icon: Sun,
-    color: "var(--gold-primary)",
-  },
-  partly_cloudy: {
-    label: "Things look solid, with some room to improve.",
-    Icon: CloudSun,
-    color: "var(--signal-warning)",
-  },
-  cloudy: {
-    label: "A few things need attention.",
-    Icon: Cloud,
-    color: "var(--text-secondary)",
-  },
-  stormy: {
-    label: "Your portfolio needs some care.",
-    Icon: CloudLightning,
-    color: "var(--signal-negative)",
-  },
-};
-
-const COMPONENT_ROWS: Array<{
-  key: ComponentKey;
-  label: string;
-  tooltip: string;
-}> = [
-  {
-    key: "diversification",
-    label: "Variety of investments",
-    tooltip: "Owning different types of investments protects you if one drops.",
-  },
-  {
-    key: "goalAlignment",
-    label: "On track for your goal",
-    tooltip: "Are your investments lined up with when you need the money?",
-  },
-  {
-    key: "risk",
-    label: "Comfort with risk level",
-    tooltip: "Does your portfolio match what you said you could handle losing?",
-  },
-  {
-    key: "fees",
-    label: "What you're paying",
-    tooltip: "Lower fees mean more of your money stays invested.",
-  },
-];
+  "Shows a beginner-friendly snapshot of diversification, risk level, fees, and goal alignment.";
 
 const clampScore = (value: number) => Math.max(0, Math.min(100, Math.round(value)));
 
-const signalColor = (value: number) => {
+const segmentColor = (value: number) => {
   if (value >= 70) return "var(--signal-positive)";
   if (value >= 40) return "var(--signal-warning)";
   return "var(--signal-negative)";
 };
 
-function AnimatedScore({ score, reducedMotion }: { score: number; reducedMotion: boolean }) {
-  const count = useMotionValue(reducedMotion ? score : 0);
-  const rounded = useTransform(count, (latest) => String(Math.round(latest)));
-  const [display, setDisplay] = useState(reducedMotion ? String(score) : "0");
-
-  useEffect(() => {
-    if (reducedMotion) {
-      count.set(score);
-      setDisplay(String(score));
-      return;
-    }
-
-    count.set(0);
-    const unsubscribe = rounded.on("change", setDisplay);
-    const controls = animate(count, score, {
-      duration: 0.9,
-      ease: "easeOut",
-    });
-
-    return () => {
-      controls.stop();
-      unsubscribe();
-    };
-  }, [count, reducedMotion, rounded, score]);
-
-  return <>{display}</>;
-}
-
-function SkeletonBar() {
-  return (
-    <div
-      style={{
-        height: 6,
-        borderRadius: 999,
-        background:
-          "linear-gradient(90deg, var(--bg-elevated-2), var(--border-default), var(--bg-elevated-2))",
-        backgroundSize: "200% 100%",
-        animation: "compass-skeleton-shimmer 1200ms ease-in-out infinite",
-      }}
-    />
-  );
-}
-
-function HealthSkeleton() {
-  return (
-    <WidgetCard title={CARD_TITLE} rationale={CARD_RATIONALE}>
-      <div style={contentStyle}>
-        <div
-          aria-hidden="true"
-          style={{
-            width: 64,
-            height: 64,
-            borderRadius: 999,
-            border: "1px solid var(--border-default)",
-            background:
-              "linear-gradient(90deg, var(--bg-elevated-2), var(--border-default), var(--bg-elevated-2))",
-            backgroundSize: "200% 100%",
-            animation: "compass-skeleton-shimmer 1200ms ease-in-out infinite",
-          }}
-        />
-        <div
-          aria-hidden="true"
-          style={{
-            width: 208,
-            height: 124,
-            borderRadius: 999,
-            border: "8px solid var(--border-default)",
-            borderBottomColor: "transparent",
-            opacity: 0.7,
-          }}
-        />
-        <div style={{ width: "100%", display: "grid", gap: "var(--space-4)" }}>
-          {[0, 1, 2, 3].map((i) => (
-            <SkeletonBar key={i} />
-          ))}
-        </div>
-      </div>
-    </WidgetCard>
-  );
-}
+const healthSummary = (score: number) => {
+  if (score >= 80) return "Looks strong. Your portfolio is balanced across the main checks.";
+  if (score >= 60) return "Looks mostly steady. A couple of areas may deserve attention.";
+  if (score >= 40) return "Needs a checkup. Start with concentration, risk level, and fees.";
+  return "Needs care. This score suggests the current mix may not fit your plan yet.";
+};
 
 export function HealthScoreWidget() {
   const health = useHealthScore() as HealthScoreResult;
-  const { explain } = useExplain();
   const prefersReducedMotion = useReducedMotion();
-  const reducedMotion = prefersReducedMotion === true;
-  const [explanation, setExplanation] = useState<string | null>(null);
-  const [explanationLoading, setExplanationLoading] = useState(false);
+  const appReducedMotion = usePrefersReducedMotion();
+  const reducedMotion = prefersReducedMotion === true || appReducedMotion;
+  const def = WIDGETS_BY_ID["health_score"];
 
-  const components = useMemo<HealthComponents>(
-    () => ({
-      diversification: clampScore(health.components?.diversification ?? 0),
-      goalAlignment: clampScore(health.components?.goalAlignment ?? 0),
-      risk: clampScore(health.components?.risk ?? 0),
-      fees: clampScore(health.components?.fees ?? 0),
-    }),
-    [health.components],
-  );
+  const components: HealthComponents = {
+    diversification: clampScore(health.components?.diversification ?? 0),
+    goalAlignment: clampScore(health.components?.goalAlignment ?? 0),
+    risk: clampScore(health.components?.risk ?? 0),
+    fees: clampScore(health.components?.fees ?? 0),
+  };
 
   if (health.loading || health.score === undefined) {
-    return <HealthSkeleton />;
+    return (
+      <WidgetCard title={CARD_TITLE} rationale={def?.rationale ?? CARD_RATIONALE}>
+        <div style={skeletonShell} aria-label="Loading portfolio health" role="status" />
+      </WidgetCard>
+    );
   }
 
+  const score = clampScore(health.score ?? 0);
   const allComponentsZero = Object.values(components).every((value) => value === 0);
 
-  if (health.score === null || allComponentsZero) {
+  if (allComponentsZero) {
     return (
-      <WidgetCard title={CARD_TITLE} rationale={CARD_RATIONALE}>
-        <div
-          style={{
-            minHeight: 360,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            textAlign: "center",
-            color: "var(--text-secondary)",
-            fontFamily: "var(--font-body)",
-            fontSize: 15,
-            lineHeight: 1.5,
-            padding: "var(--space-6)",
-          }}
-        >
-          {"We're still calculating your score. Check back after connecting your portfolio."}
+      <WidgetCard title={CARD_TITLE} rationale={def?.rationale ?? CARD_RATIONALE}>
+        <div style={emptyShell}>
+          {"We're still calculating your health score. Connect a portfolio or open the sample dashboard first."}
         </div>
       </WidgetCard>
     );
   }
 
-  const score = clampScore(health.score);
-  const weather = health.weather ?? (score >= 80 ? "sunny" : score >= 60 ? "partly_cloudy" : score >= 40 ? "cloudy" : "stormy");
-  const weatherInfo = WEATHER[weather];
-  const WeatherIcon = weatherInfo.Icon;
-  const arcLength = Math.PI * 82;
-  const arcOffset = arcLength * (1 - score / 100);
-  const explainContext = {
-    "Variety of investments": components.diversification,
-    "On track for your goal": components.goalAlignment,
-    "Comfort with risk level": components.risk,
-    "What you're paying": components.fees,
-  };
-
-  const handleTellMeMore = async () => {
-    if (explanation || explanationLoading) return;
-    setExplanationLoading(true);
-    const text = await explain("health_score", explainContext);
-    setExplanation(text || "This score looks at whether your portfolio fits your goal, your comfort level, and what you pay to own it.");
-    setExplanationLoading(false);
-  };
+  const segments = [
+    { label: "Diversification", value: components.diversification, color: segmentColor(components.diversification) },
+    { label: "Risk level", value: components.risk, color: segmentColor(components.risk) },
+    { label: "Fees", value: components.fees, color: segmentColor(components.fees) },
+    { label: "Goal alignment", value: components.goalAlignment, color: segmentColor(components.goalAlignment) },
+  ];
 
   return (
-    <WidgetCard title={CARD_TITLE} rationale={CARD_RATIONALE}>
+    <WidgetCard title={CARD_TITLE} rationale={def?.rationale ?? CARD_RATIONALE}>
       <div style={contentStyle}>
-        <div
-          aria-label={weatherInfo.label}
-          style={{
-            display: "grid",
-            justifyItems: "center",
-            gap: "var(--space-2)",
-            textAlign: "center",
-          }}
-        >
-          <WeatherIcon aria-hidden="true" size={56} strokeWidth={1.7} color={weatherInfo.color} />
-          <p
-            style={{
-              margin: 0,
-              color: "var(--text-secondary)",
-              fontFamily: "var(--font-body)",
-              fontSize: 15,
-              lineHeight: 1.35,
-            }}
-          >
-            {weatherInfo.label}
-          </p>
-        </div>
-
-        <div style={{ position: "relative", width: 220, height: 152 }}>
-          <svg
-            width="220"
-            height="152"
-            viewBox="0 0 220 152"
-            role="img"
-            aria-label={`Portfolio health score: ${score} out of 100`}
-          >
-            <path
-              d="M 28 116 A 82 82 0 0 1 192 116"
-              fill="none"
-              stroke="var(--border-default)"
-              strokeWidth={8}
-              strokeLinecap="round"
-            />
-            <motion.path
-              d="M 28 116 A 82 82 0 0 1 192 116"
-              fill="none"
-              stroke={signalColor(score)}
-              strokeWidth={8}
-              strokeLinecap="round"
-              strokeDasharray={arcLength}
-              style={{ strokeDashoffset: arcOffset }}
-              initial={reducedMotion ? false : { strokeDashoffset: arcLength }}
-              animate={{ strokeDashoffset: arcOffset }}
-              transition={{ duration: reducedMotion ? 0 : 0.9, ease: "easeOut" }}
-            />
-          </svg>
-          <div
-            style={{
-              position: "absolute",
-              inset: "42px 0 auto",
-              display: "grid",
-              justifyItems: "center",
-              gap: "var(--space-1)",
-            }}
-          >
-            <div
-              style={{
-                fontFamily: "var(--font-display)",
-                fontSize: 48,
-                fontWeight: 300,
-                lineHeight: 1,
-                color: "var(--text-primary)",
-                fontVariantNumeric: "tabular-nums",
-              }}
-            >
-              <AnimatedScore score={score} reducedMotion={reducedMotion} />
-            </div>
-            <div
-              style={{
-                fontFamily: "var(--font-body)",
-                fontSize: 13,
-                letterSpacing: "0.04em",
-                textTransform: "uppercase",
-                color: "var(--text-tertiary)",
-              }}
-            >
-              out of 100
-            </div>
+        <div style={topRow}>
+          <AnimatedDownloadButton
+            score={score}
+            label="Portfolio Health"
+            summary={healthSummary(score)}
+            segments={segments}
+            reducedMotion={reducedMotion}
+          />
+          <div style={copyBlock}>
+            <p style={eyebrow}>Hover or tap the ring</p>
+            <h4 style={headline}>{healthSummary(score)}</h4>
+            <p style={body}>
+              This is a procedural health circle, not a professional risk model. It is calculated from
+              four visible inputs below so beginners can see exactly what changed.
+            </p>
           </div>
         </div>
 
-        <div style={{ width: "100%", display: "grid", gap: "var(--space-4)" }}>
-          {COMPONENT_ROWS.map((row, index) => {
-            const value = components[row.key];
-            return (
-              <div key={row.key} style={{ display: "grid", gap: "var(--space-2)" }}>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: "var(--space-3)",
-                  }}
-                >
-                  <span
-                    style={{
-                      color: "var(--text-secondary)",
-                      fontFamily: "var(--font-body)",
-                      fontSize: 13,
-                      lineHeight: 1.25,
-                    }}
-                  >
-                    {row.label}
-                  </span>
-                  <WhyIsThisHere rationale={row.tooltip} />
-                </div>
-                <div
-                  role="progressbar"
-                  aria-label={row.label}
-                  aria-valuenow={value}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  style={{
-                    height: 6,
-                    borderRadius: 999,
-                    background: "var(--bg-inset)",
-                    overflow: "hidden",
-                    border: "1px solid var(--border-subtle)",
-                  }}
-                >
-                  <motion.div
-                    style={{
-                      height: "100%",
-                      borderRadius: 999,
-                      background: signalColor(value),
-                    }}
-                    initial={reducedMotion ? false : { width: 0 }}
-                    animate={{ width: `${value}%` }}
-                    transition={{
-                      duration: reducedMotion ? 0 : 0.5,
-                      delay: reducedMotion ? 0 : 0.5 + index * 0.1,
-                      ease: "easeOut",
-                    }}
-                  />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        <div style={{ width: "100%", display: "grid", gap: "var(--space-3)" }}>
-          <button
-            type="button"
-            onClick={handleTellMeMore}
-            style={{
-              justifySelf: "start",
-              background: "transparent",
-              border: "none",
-              padding: 0,
-              color: "var(--gold-primary)",
-              cursor: "pointer",
-              fontFamily: "var(--font-body)",
-              fontSize: 13,
-              letterSpacing: "0.04em",
-              textTransform: "uppercase",
-              textDecoration: "underline",
-              textDecorationStyle: "dotted",
-              textUnderlineOffset: 4,
-            }}
-          >
-            Tell me more
-          </button>
-
-          {explanationLoading && <SkeletonBar />}
-
-          {explanation && (
-            <motion.p
-              initial={reducedMotion ? false : { opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: reducedMotion ? 0 : 0.2 }}
-              style={{
-                margin: 0,
-                color: "var(--text-secondary)",
-                fontFamily: "var(--font-body)",
-                fontSize: 13,
-                lineHeight: 1.5,
-              }}
+        <div style={componentGrid}>
+          {segments.map((segment, index) => (
+            <motion.div
+              key={segment.label}
+              initial={reducedMotion ? false : { opacity: 0, y: 6 }}
+              animate={reducedMotion ? undefined : { opacity: 1, y: 0 }}
+              transition={{ duration: reducedMotion ? 0 : 0.24, delay: index * 0.05 }}
+              style={metricCard}
             >
-              {explanation}
-            </motion.p>
-          )}
+              <div style={metricHeader}>
+                <span style={metricLabel}>{segment.label}</span>
+                <span style={{ ...metricValue, color: segment.color }}>{Math.round(segment.value)}/100</span>
+              </div>
+              <div style={barTrack} aria-hidden="true">
+                <span style={{ ...barFill, width: `${segment.value}%`, background: segment.color }} />
+              </div>
+            </motion.div>
+          ))}
         </div>
+
+        <ShowMeTheMath
+          formula="Health Score = diversification 30% + goal alignment 25% + risk fit 25% + fee score 20%."
+          rows={[
+            { label: "Diversification", value: `${components.diversification}/100` },
+            { label: "Goal alignment", value: `${components.goalAlignment}/100` },
+            { label: "Risk fit", value: `${components.risk}/100` },
+            { label: "Fees", value: `${components.fees}/100` },
+          ]}
+          result={{ label: "Health Score", value: `${score}/100` }}
+        />
       </div>
     </WidgetCard>
   );
@@ -434,9 +136,113 @@ export function HealthScoreWidget() {
 
 const contentStyle: CSSProperties = {
   minHeight: 360,
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  justifyContent: "space-between",
+  display: "grid",
   gap: "var(--space-4)",
+  alignContent: "start",
+};
+
+const topRow: CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  gap: "var(--space-4)",
+  flexWrap: "wrap",
+};
+
+const copyBlock: CSSProperties = {
+  flex: "1 1 220px",
+  minWidth: 0,
+};
+
+const eyebrow: CSSProperties = {
+  margin: 0,
+  color: "var(--gold-primary)",
+  fontFamily: "var(--font-body)",
+  fontSize: 11,
+  letterSpacing: "0.04em",
+  textTransform: "uppercase",
+};
+
+const headline: CSSProperties = {
+  margin: "var(--space-1) 0 0",
+  color: "var(--text-primary)",
+  fontFamily: "var(--font-body)",
+  fontSize: 16,
+  fontWeight: 500,
+  lineHeight: 1.3,
+};
+
+const body: CSSProperties = {
+  margin: "var(--space-2) 0 0",
+  color: "var(--text-tertiary)",
+  fontFamily: "var(--font-body)",
+  fontSize: 13,
+  lineHeight: 1.45,
+};
+
+const componentGrid: CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+  gap: "var(--space-3)",
+};
+
+const metricCard: CSSProperties = {
+  padding: "var(--space-3)",
+  border: "1px solid var(--border-subtle)",
+  borderRadius: 12,
+  background: "var(--bg-inset)",
+  display: "grid",
+  gap: "var(--space-2)",
+};
+
+const metricHeader: CSSProperties = {
+  display: "flex",
+  justifyContent: "space-between",
+  gap: "var(--space-3)",
+};
+
+const metricLabel: CSSProperties = {
+  color: "var(--text-secondary)",
+  fontFamily: "var(--font-body)",
+  fontSize: 12,
+};
+
+const metricValue: CSSProperties = {
+  color: "var(--text-primary)",
+  fontFamily: "var(--font-mono)",
+  fontSize: 12,
+  fontVariantNumeric: "tabular-nums",
+};
+
+const barTrack: CSSProperties = {
+  height: 6,
+  borderRadius: 999,
+  background: "var(--bg-elevated-2)",
+  overflow: "hidden",
+};
+
+const barFill: CSSProperties = {
+  display: "block",
+  height: "100%",
+  borderRadius: 999,
+};
+
+const skeletonShell: CSSProperties = {
+  minHeight: 280,
+  borderRadius: 32,
+  background:
+    "linear-gradient(90deg, var(--bg-elevated-2), var(--border-default), var(--bg-elevated-2))",
+  backgroundSize: "200% 100%",
+  animation: "compass-skeleton-shimmer 1200ms ease-in-out infinite",
+};
+
+const emptyShell: CSSProperties = {
+  minHeight: 280,
+  display: "grid",
+  placeItems: "center",
+  textAlign: "center",
+  color: "var(--text-secondary)",
+  fontFamily: "var(--font-body)",
+  fontSize: 15,
+  lineHeight: 1.5,
+  padding: "var(--space-6)",
 };

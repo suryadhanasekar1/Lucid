@@ -15,7 +15,7 @@ interface Props {
 export function LifeStageScreen({ value, onChange, onNext, onBack }: Props) {
   return (
     <QuestionLayout
-      eyebrow="Step 7 of 8"
+      eyebrow="Step 7 of 9"
       title="Which sounds most like you right now?"
       footer={
         <>

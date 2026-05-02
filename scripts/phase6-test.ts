@@ -33,8 +33,10 @@ function profileFor(overrides: Partial<UserProfile["answers"]>, riskScore = 50):
       worry: "taxes_fees",
       checkIn: "monthly",
       lifeStage: "early_career",
+      uiMode: "investor",
       ...overrides,
     },
+    uiMode: overrides.uiMode ?? "investor",
     riskScore,
     completedAt: new Date().toISOString(),
   };
@@ -175,10 +177,24 @@ async function main() {
     else bad(`DashboardClient missing ${id}`);
   }
 
-  // Hook count stable
+  // Original hook contract still present; later gap-fill work may add hooks.
   const hooks = await fs.readdir(path.join(process.cwd(), "src/hooks"));
-  if (hooks.filter((f) => f.endsWith(".ts")).length === 11) ok("hook count = 11");
-  else bad(`hook count = ${hooks.length}`);
+  const requiredHooks = [
+    "useUserProfile.ts",
+    "usePortfolio.ts",
+    "useHealthScore.ts",
+    "useWidgets.ts",
+    "useScenario.ts",
+    "useWorryTranslator.ts",
+    "useHeadlineDecoder.ts",
+    "useCircuitBreaker.ts",
+    "useFundXRay.ts",
+    "useMacroConditions.ts",
+    "useExplain.ts",
+  ];
+  const missingHooks = requiredHooks.filter((hook) => !hooks.includes(hook));
+  if (missingHooks.length === 0) ok(`original hook contract present (${hooks.filter((f) => f.endsWith(".ts")).length} hooks total)`);
+  else bad(`missing original hooks: ${missingHooks.join(", ")}`);
 
   // Explain endpoint added new fallbacks
   const explain = await fs.readFile(path.join(process.cwd(), "src/app/api/claude/explain/route.ts"), "utf-8");

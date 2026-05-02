@@ -59,6 +59,9 @@ const config: Config = {
         12: "var(--space-12)",
         16: "var(--space-16)",
       },
+      transitionProperty: {
+        width: "width",
+      },
     },
   },
   plugins: [],

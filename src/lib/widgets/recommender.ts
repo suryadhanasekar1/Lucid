@@ -1,14 +1,41 @@
 import type { UserProfile, WidgetDefinition } from "@/types";
 import { WIDGETS } from "./registry";
 
+const SIMPLE_WIDGET_IDS = new Set([
+  "total_value",
+  "health_score",
+  "portfolio_history",
+  "stock_explorer",
+]);
+
+const ADVANCED_WIDGET_IDS = new Set([
+  "total_value",
+  "health_score",
+  "portfolio_history",
+  "stock_explorer",
+  "mutual_fund_xray",
+  "macro_conditions",
+  "sector_exposure",
+  "what_you_own",
+  "cost_tax_receipt",
+  "compare_to_index",
+  "weekly_digest",
+  "streak_tracker",
+]);
+
 /**
  * Returns the widget definitions that should be recommended for the given
  * profile. Order is: P0 first, then P1, then P2.
  */
-export function recommendWidgets(profile: UserProfile): WidgetDefinition[] {
+export function recommendWidgets(
+  profile: UserProfile,
+  view: "simple" | "advanced" = "simple",
+): WidgetDefinition[] {
+  const allowed = view === "advanced" ? ADVANCED_WIDGET_IDS : SIMPLE_WIDGET_IDS;
   const seen = new Set<string>();
   const out: WidgetDefinition[] = [];
   for (const w of WIDGETS) {
+    if (!allowed.has(w.id)) continue;
     if (!w.triggers(profile)) continue;
     if (seen.has(w.id)) continue;
     seen.add(w.id);

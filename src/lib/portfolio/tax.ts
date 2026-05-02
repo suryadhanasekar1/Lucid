@@ -40,3 +40,50 @@ export function annualFeeDrag(holding: Holding): number {
   const er = erTable[holding.ticker] ?? 0.005;
   return holding.value * er;
 }
+
+export function findTaxLossOpportunities(holdings: Holding[]): {
+  symbol: string;
+  currentValue: number;
+  costBasis: number;
+  unrealizedLoss: number;
+  harvestableAmount: number;
+  suggestedReplacement: string;
+  washSaleWarning: boolean;
+}[] {
+  return holdings
+    .map((holding) => {
+      const currentValue = holding.value;
+      const costBasis = holding.costBasis ?? currentValue;
+      const unrealizedLoss = Math.max(0, costBasis - currentValue);
+      return {
+        symbol: holding.ticker,
+        currentValue,
+        costBasis,
+        unrealizedLoss,
+        harvestableAmount: unrealizedLoss,
+        suggestedReplacement: replacementFor(holding.ticker),
+        washSaleWarning: isRecentPurchase(holding.purchaseDate),
+      };
+    })
+    .filter((item) => item.unrealizedLoss > 0)
+    .sort((a, b) => b.unrealizedLoss - a.unrealizedLoss);
+}
+
+function isRecentPurchase(purchaseDate?: string) {
+  if (!purchaseDate) return false;
+  const purchased = Date.parse(purchaseDate);
+  if (!Number.isFinite(purchased)) return false;
+  return Date.now() - purchased < 1000 * 60 * 60 * 24 * 30;
+}
+
+function replacementFor(symbol: string) {
+  const replacements: Record<string, string> = {
+    VTI: "SCHB",
+    VOO: "IVV",
+    VTSAX: "SWTSX",
+    VXUS: "IXUS",
+    BND: "AGG",
+    QQQ: "VGT",
+  };
+  return replacements[symbol.toUpperCase()] ?? "similar diversified ETF";
+}

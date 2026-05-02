@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Search, TrendingUp } from "lucide-react";
 import { usePortfolio } from "@/hooks/usePortfolio";
@@ -19,6 +19,18 @@ export function StockExplorer() {
   const explorer = useStockExplorer();
   const { holdings, totalValue } = usePortfolio();
   const [draft, setDraft] = useState("");
+  const [exploreOpen, setExploreOpen] = useState(false);
+  const ownedTradable = useMemo(
+    () => holdings.filter((h) => h.type === "stock" || h.type === "etf" || h.type === "mutual_fund"),
+    [holdings],
+  );
+
+  useEffect(() => {
+    if (explorer.selected || ownedTradable.length === 0) return;
+    void explorer.select(ownedTradable[0]!.ticker);
+    // Run once when holdings arrive; the selected object is intentionally not a dependency.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ownedTradable]);
 
   const fit = useMemo(() => {
     const selected = explorer.selected;
@@ -66,18 +78,59 @@ export function StockExplorer() {
       rationale="Search a stock, see the recent price path, and preview how it could change your portfolio before buying."
     >
       <div style={{ display: "grid", gap: "var(--space-4)" }}>
-        <div style={searchShell}>
-          <Search size={16} color="var(--text-tertiary)" />
-          <input
-            value={draft}
-            onChange={(e) => void handleSearch(e.target.value)}
-            placeholder="Search ticker or company"
-            aria-label="Search ticker or company"
-            style={searchInput}
-          />
+        <div style={{ display: "grid", gap: "var(--space-2)" }}>
+          <p style={sectionLabel}>Stocks and funds you own</p>
+          <div style={ownedList}>
+            {ownedTradable.slice(0, 6).map((holding) => (
+              <button
+                key={holding.ticker}
+                type="button"
+                onClick={() => {
+                  setDraft(holding.ticker);
+                  void explorer.select(holding.ticker);
+                }}
+                style={{
+                  ...ownedButton,
+                  borderColor:
+                    explorer.selected?.symbol === holding.ticker
+                      ? "var(--gold-primary)"
+                      : "var(--border-subtle)",
+                }}
+              >
+                <span style={symbolText}>{holding.ticker}</span>
+                <span style={ownedMeta}>
+                  {formatCurrency(holding.value)} · {formatWeight(totalValue > 0 ? holding.value / totalValue : 0)}
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
 
-        {explorer.results.length > 0 && (
+        <button
+          type="button"
+          onClick={() => setExploreOpen((open) => !open)}
+          style={exploreToggle}
+        >
+          {exploreOpen ? "Hide stock search" : "Explore more stocks"}
+        </button>
+
+        {exploreOpen && (
+          <div style={{ display: "grid", gap: "var(--space-2)" }}>
+            <p style={sectionLabel}>Browse stocks you do not own yet</p>
+            <div style={searchShell}>
+              <Search size={16} color="var(--text-tertiary)" />
+              <input
+                value={draft}
+                onChange={(e) => void handleSearch(e.target.value)}
+                placeholder="Search ticker or company"
+                aria-label="Search ticker or company"
+                style={searchInput}
+              />
+            </div>
+          </div>
+        )}
+
+        {exploreOpen && explorer.results.length > 0 && (
           <div style={resultsList}>
             {explorer.results.map((result) => (
               <button
@@ -256,6 +309,10 @@ function formatPct(value: number) {
   return `${value >= 0 ? "+" : ""}${Math.round(value * 100)}%`;
 }
 
+function formatWeight(value: number) {
+  return `${Math.round(value * 100)}%`;
+}
+
 function formatNumber(value: number | null) {
   if (typeof value !== "number") return "--";
   return value.toFixed(value >= 10 ? 0 : 2);
@@ -277,6 +334,50 @@ const searchShell: React.CSSProperties = {
   border: "1px solid var(--border-default)",
   borderRadius: 10,
   background: "var(--bg-inset)",
+};
+
+const sectionLabel: React.CSSProperties = {
+  margin: 0,
+  color: "var(--text-tertiary)",
+  fontFamily: "var(--font-body)",
+  fontSize: 11,
+  letterSpacing: "0.04em",
+  textTransform: "uppercase",
+};
+
+const ownedList: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(128px, 1fr))",
+  gap: "var(--space-2)",
+};
+
+const ownedButton: React.CSSProperties = {
+  display: "grid",
+  gap: 2,
+  padding: "var(--space-3)",
+  border: "1px solid var(--border-subtle)",
+  borderRadius: 10,
+  background: "var(--bg-inset)",
+  textAlign: "left",
+  cursor: "pointer",
+};
+
+const ownedMeta: React.CSSProperties = {
+  color: "var(--text-tertiary)",
+  fontFamily: "var(--font-body)",
+  fontSize: 11,
+};
+
+const exploreToggle: React.CSSProperties = {
+  justifySelf: "start",
+  border: "1px solid var(--border-default)",
+  borderRadius: 999,
+  background: "transparent",
+  color: "var(--gold-primary)",
+  padding: "7px 12px",
+  fontFamily: "var(--font-body)",
+  fontSize: 12,
+  cursor: "pointer",
 };
 
 const searchInput: React.CSSProperties = {

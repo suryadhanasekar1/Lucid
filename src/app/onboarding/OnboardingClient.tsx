@@ -11,6 +11,7 @@ import { SleepTestScreen } from "@/components/survey/v1/SleepTestScreen";
 import { WorryScreen } from "@/components/survey/v1/WorryScreen";
 import { CheckInScreen } from "@/components/survey/v1/CheckInScreen";
 import { LifeStageScreen } from "@/components/survey/v1/LifeStageScreen";
+import { KnowledgeScreen } from "@/components/survey/v1/KnowledgeScreen";
 import { SummaryScreen } from "@/components/survey/v1/SummaryScreen";
 import { useSurveyDraft } from "@/hooks/useUserProfile";
 import {
@@ -119,6 +120,15 @@ export function OnboardingClient({ initialStep }: Props) {
         />
       )}
 
+      {step === "knowledge" && (
+        <KnowledgeScreen
+          value={draft.uiMode}
+          onChange={(uiMode) => updateDraft({ uiMode })}
+          onNext={onNext}
+          onBack={onBack}
+        />
+      )}
+
       {step === "summary" && draft.painThreshold !== undefined && (
         <SummaryScreen
           answers={{
@@ -131,6 +141,7 @@ export function OnboardingClient({ initialStep }: Props) {
             worry: draft.worry ?? "losing_money",
             checkIn: draft.checkIn ?? "weekly",
             lifeStage: draft.lifeStage ?? "early_career",
+            uiMode: draft.uiMode ?? "essentials",
           }}
           riskScore={Math.round(
             ((draft.sleepTestStartingValue ?? 25_000) - draft.painThreshold) /
