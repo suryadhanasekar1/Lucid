@@ -66,6 +66,13 @@ export interface UserProfile {
 // ───────────────────────────────── Portfolio ──────────────────────────────────
 
 export type AssetType = "stock" | "etf" | "mutual_fund" | "bond" | "cash";
+export type RiskAssetType =
+  | "broad_market_fund"
+  | "international_fund"
+  | "bond_fund"
+  | "cash"
+  | "individual_stock"
+  | "speculative_stock";
 
 export type PortfolioSource = "snaptrade" | "sample" | "none";
 
@@ -82,6 +89,10 @@ export interface Holding {
   purchaseDate?: string;
   /** Computed: shares * price. */
   value: number;
+  /** Beginner risk bucket used by the demo health/rebalance logic. */
+  assetType?: RiskAssetType;
+  /** Optional explicit 0-100 risk score for demo/sample holdings. */
+  riskScore?: number;
   /** Optional pre-computed allocation (0-1). */
   weight?: number;
 }

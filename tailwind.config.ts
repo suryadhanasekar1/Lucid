@@ -38,6 +38,9 @@ const config: Config = {
           DEFAULT: "var(--border-default)",
           emphasis: "var(--border-emphasis)",
         },
+        "context-card-border": "var(--context-card-border)",
+        "gray-1000": "var(--ds-gray-1000)",
+        "gray-alpha-400": "var(--ds-gray-alpha-400)",
       },
       fontFamily: {
         display: "var(--font-display)",

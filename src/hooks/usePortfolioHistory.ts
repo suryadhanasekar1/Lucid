@@ -24,6 +24,7 @@ export function usePortfolioHistory(): {
 } {
   const holdings = usePortfolioStore((s) => s.holdings);
   const currentTotal = usePortfolioStore((s) => s.totalValue);
+  const portfolioLoading = usePortfolioStore((s) => s.loading);
   const [period, setPeriod] = useState<Period>("1y");
   const [history, setHistory] = useState<PortfolioPoint[]>([]);
   const [source, setSource] = useState<"market" | "sample">("market");
@@ -34,8 +35,9 @@ export function usePortfolioHistory(): {
 
     async function load() {
       if (holdings.length === 0) {
-        setHistory([]);
-        setSource("market");
+        setHistory(currentTotal > 0 ? generateSampleHistory(currentTotal, period) : []);
+        setSource("sample");
+        setLoading(portfolioLoading);
         return;
       }
       setLoading(true);
@@ -56,7 +58,7 @@ export function usePortfolioHistory(): {
               );
               const data = (await res.json()) as HistoryResponse;
               points = Array.isArray(data.history) ? data.history : [];
-              historyCache.set(key, points);
+              if (points.length > 0) historyCache.set(key, points);
             }
             return { holding, points };
           }),
@@ -91,7 +93,7 @@ export function usePortfolioHistory(): {
     return () => {
       cancelled = true;
     };
-  }, [currentTotal, holdings, period]);
+  }, [currentTotal, holdings, period, portfolioLoading]);
 
   const { totalReturn, totalReturnPercent } = useMemo(() => {
     if (history.length < 2) return { totalReturn: 0, totalReturnPercent: 0 };
@@ -139,7 +141,7 @@ function generateSampleHistory(currentTotal: number, period: Period): PortfolioP
       : startValue + (currentTotal - startValue) * progress + currentTotal * wave;
     return {
       date: date.toISOString().slice(0, 10),
-      value: Math.max(0, value),
+      value: Math.max(1, value),
     };
   });
 }

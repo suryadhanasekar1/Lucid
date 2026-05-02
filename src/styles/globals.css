@@ -53,6 +53,10 @@
   --font-display: var(--font-fraunces, Georgia), Georgia, serif;
   --font-body: var(--font-geist-sans, -apple-system), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-mono: var(--font-jetbrains, ui-monospace), ui-monospace, "JetBrains Mono", monospace;
+
+  --context-card-border: var(--border-default);
+  --ds-gray-1000: var(--text-primary);
+  --ds-gray-alpha-400: var(--border-default);
 }
 
 html,
@@ -68,6 +72,16 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+}
+
+html {
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  min-height: 100dvh;
+  overflow-x: hidden;
 }
 
 * {
@@ -152,6 +166,28 @@ body {
   h1 {
     font-size: 28px !important;
     line-height: 1.15 !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .home-landing {
+    min-height: 100svh !important;
+    padding: 28px 18px !important;
+    align-items: center !important;
+  }
+
+  .home-hero-title {
+    font-size: clamp(40px, 14vw, 56px) !important;
+    line-height: 1.04 !important;
+  }
+
+  .home-cta-row {
+    width: 100% !important;
+    align-items: stretch !important;
+  }
+
+  .home-cta {
+    width: 100% !important;
   }
 }
 

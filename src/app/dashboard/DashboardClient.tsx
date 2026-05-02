@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { usePortfolio } from "@/hooks/usePortfolio";
 import { useWidgets } from "@/hooks/useWidgets";
 import { DashboardGrid } from "@/components/shared/v1/DashboardGrid";
-import { HealthScoreWidget } from "@/components/widgets/v1/HealthScoreWidget";
+import { HeaderHealthGauge } from "@/components/shared/v1/HeaderHealthGauge";
 import { TotalValueWidget } from "@/components/widgets/v1/TotalValueWidget";
 import { PortfolioHistoryWidget } from "@/components/widgets/v1/PortfolioHistory";
 import { MacroConditionsWidget } from "@/components/widgets/v1/MacroConditionsWidget";
@@ -18,15 +19,14 @@ import { CostTaxReceiptWidget } from "@/components/widgets/v1/CostTaxReceiptWidg
 import { CompareToIndexWidget } from "@/components/widgets/v1/CompareToIndexWidget";
 import { WeeklyDigestWidget } from "@/components/widgets/v1/WeeklyDigestWidget";
 import { AntiPanicStreakWidget } from "@/components/widgets/v1/AntiPanicStreakWidget";
-import { WorryTranslatorWidget } from "@/components/widgets/v1/WorryTranslatorWidget";
-import { ActionQueueWidget } from "@/components/widgets/v1/ActionQueue";
+import { CircuitBreakerWidget } from "@/components/widgets/v1/CircuitBreakerWidget";
 import { PlaceholderWidget } from "@/components/widgets/v1/PlaceholderWidget";
 import { ErrorBoundary } from "@/components/shared/v1/ErrorBoundary";
 import { UIModeToggle } from "@/components/shared/v1/UIModeToggle";
+import { buildDemoProfile } from "@/lib/demoProfile";
 import { WIDGETS_BY_ID } from "@/lib/widgets/registry";
 
 const REAL_WIDGETS: Record<string, () => JSX.Element> = {
-  health_score: HealthScoreWidget,
   total_value: TotalValueWidget,
   portfolio_history: PortfolioHistoryWidget,
   macro_conditions: MacroConditionsWidget,
@@ -38,15 +38,25 @@ const REAL_WIDGETS: Record<string, () => JSX.Element> = {
   compare_to_index: CompareToIndexWidget,
   weekly_digest: WeeklyDigestWidget,
   streak_tracker: AntiPanicStreakWidget,
+  circuit_breaker: CircuitBreakerWidget,
 };
 
 export function DashboardClient() {
-  const { profile, isOnboarded } = useUserProfile();
+  const searchParams = useSearchParams();
+  const wantsDemo = searchParams.get("demo") === "1";
+  const { profile, isOnboarded, setProfile } = useUserProfile();
   const { source, loading } = usePortfolio();
   const { recommended } = useWidgets();
-  const [assistantOpen, setAssistantOpen] = useState(false);
+  const demoProfile = useMemo(() => (wantsDemo ? buildDemoProfile() : null), [wantsDemo]);
+  const activeProfile = demoProfile ?? profile;
 
-  if (!isOnboarded || !profile) {
+  useEffect(() => {
+    if (demoProfile && profile?.completedAt !== demoProfile.completedAt) {
+      setProfile(demoProfile);
+    }
+  }, [demoProfile, profile?.completedAt, setProfile]);
+
+  if ((!isOnboarded && !wantsDemo) || !activeProfile) {
     return (
       <main style={shell}>
         <section style={{ maxWidth: 560 }}>
@@ -97,13 +107,16 @@ export function DashboardClient() {
           <h1 style={hero}>
             Built around{" "}
             <span style={{ color: "var(--gold-primary)" }}>
-              {profile.answers.goal || "your goal"}
+              {activeProfile.answers.goal || "your goal"}
             </span>
             .
           </h1>
         </div>
         <div style={{ display: "grid", justifyItems: "end", gap: "var(--space-2)" }}>
-          <UIModeToggle />
+          <div style={{ display: "flex", alignItems: "center", gap: "var(--space-2)", flexWrap: "wrap", justifyContent: "flex-end" }}>
+            <HeaderHealthGauge />
+            <UIModeToggle />
+          </div>
           <div
             style={{
               fontFamily: "var(--font-mono)",
@@ -112,7 +125,7 @@ export function DashboardClient() {
               letterSpacing: "0.02em",
             }}
           >
-            {loading ? "refreshing…" : profileSummary(profile)}
+            {loading ? "refreshing…" : profileSummary(activeProfile)}
           </div>
         </div>
       </header>
@@ -148,26 +161,6 @@ export function DashboardClient() {
       )}
 
       <DashboardGrid cells={cells} />
-
-      <section style={assistantShell} aria-label="Compass assistant">
-        <button
-          type="button"
-          onClick={() => setAssistantOpen((open) => !open)}
-          style={assistantToggle}
-        >
-          {assistantOpen ? "Close Assistant" : "Open Assistant"}
-        </button>
-        {assistantOpen && (
-          <div style={assistantGrid}>
-            <ErrorBoundary title="Atlas Assistant">
-              <WorryTranslatorWidget />
-            </ErrorBoundary>
-            <ErrorBoundary title="Agent Inbox">
-              <ActionQueueWidget />
-            </ErrorBoundary>
-          </div>
-        )}
-      </section>
     </main>
   );
 }
@@ -225,26 +218,3 @@ const primaryCta: React.CSSProperties = {
   marginTop: "var(--space-6)",
 };
 
-const assistantShell: React.CSSProperties = {
-  marginTop: "var(--space-8)",
-  borderTop: "1px solid var(--border-subtle)",
-  paddingTop: "var(--space-6)",
-};
-
-const assistantToggle: React.CSSProperties = {
-  border: "1px solid var(--border-default)",
-  borderRadius: 999,
-  background: "var(--bg-elevated)",
-  color: "var(--gold-primary)",
-  padding: "10px 16px",
-  fontFamily: "var(--font-body)",
-  fontSize: 13,
-  cursor: "pointer",
-};
-
-const assistantGrid: React.CSSProperties = {
-  marginTop: "var(--space-4)",
-  display: "grid",
-  gridTemplateColumns: "minmax(0, 1.2fr) minmax(280px, 0.8fr)",
-  gap: "var(--space-4)",
-};

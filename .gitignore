@@ -8,6 +8,7 @@ node_modules/
 .pnp.js
 
 .next/
+.next-stale-*/
 out/
 build/
 dist/
@@ -26,6 +27,8 @@ test-results/
 npm-debug.log*
 
 .cache/
+.ms-playwright/
+.npm-cache/
 .turbo/
 
 *.pem
