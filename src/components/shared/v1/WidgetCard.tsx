@@ -26,7 +26,7 @@ interface Props {
  */
 export function WidgetCard({ title, rationale, hideHeader = false, className, children }: Props) {
   return (
-    <TiltCard maxTilt={6} perspective={1000}>
+    <TiltCard maxTilt={4} perspective={1200}>
       <Card
         className={cn(
           "glass-surface flex h-full flex-col gap-3 overflow-hidden p-6 shadow-none",
