@@ -1,8 +1,9 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import type { ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import { SURVEY_STEPS, type SurveyStep } from "@/stores/userStore";
+import { motionDuration, usePrefersReducedMotion } from "@/lib/a11y";
 
 interface Props {
   step: SurveyStep;
@@ -13,6 +14,31 @@ export function SurveyShell({ step, children }: Props) {
   const stepIndex = SURVEY_STEPS.indexOf(step);
   const totalSteps = SURVEY_STEPS.length - 1; // welcome doesn't count toward progress
   const progressIndex = Math.max(0, stepIndex - 1);
+  const reducedMotion = usePrefersReducedMotion();
+  const prevIndexRef = useRef(stepIndex);
+  const direction = stepIndex >= prevIndexRef.current ? 1 : -1;
+  prevIndexRef.current = stepIndex;
+  const slideDistance = 32;
+  const variants = {
+    enter: (dir: number) => ({
+      opacity: 0,
+      x: dir * slideDistance,
+      scale: 0.985,
+      filter: "blur(6px)",
+    }),
+    center: {
+      opacity: 1,
+      x: 0,
+      scale: 1,
+      filter: "blur(0px)",
+    },
+    exit: (dir: number) => ({
+      opacity: 0,
+      x: dir * -slideDistance,
+      scale: 0.985,
+      filter: "blur(6px)",
+    }),
+  };
 
   return (
     <main
@@ -49,13 +75,19 @@ export function SurveyShell({ step, children }: Props) {
           <ProgressDots total={totalSteps} index={progressIndex} />
         </header>
 
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait" custom={direction} initial={false}>
           <motion.div
             key={step}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            custom={direction}
+            variants={reducedMotion ? undefined : variants}
+            initial={reducedMotion ? { opacity: 0 } : "enter"}
+            animate={reducedMotion ? { opacity: 1 } : "center"}
+            exit={reducedMotion ? { opacity: 0 } : "exit"}
+            transition={{
+              duration: motionDuration(reducedMotion, 0.42),
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            style={{ willChange: "transform, opacity, filter" }}
           >
             {children}
           </motion.div>
