@@ -69,11 +69,9 @@ export function WidgetPicker() {
               <DropdownMenuCheckboxItem
                 key={w.id}
                 checked={activeSet.has(w.id)}
-                onSelect={(e) => {
-                  e.preventDefault();
-                  toggle(w.id);
-                }}
-                className="text-[13px]"
+                onCheckedChange={() => toggle(w.id)}
+                onSelect={(e) => e.preventDefault()}
+                className="cursor-pointer text-[13px]"
               >
                 {w.title}
               </DropdownMenuCheckboxItem>

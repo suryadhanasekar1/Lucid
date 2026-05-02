@@ -15,6 +15,9 @@ interface PortfolioStore {
 
   // Persistent layout / active widget set, keyed implicitly by current profile.
   activeWidgets: string[];
+  /** Widget ids the user has explicitly removed via the picker. The auto-add
+   * effect respects this so a removed widget doesn't get reseeded. */
+  dismissedWidgets: string[];
   layout: GridLayout;
   actionCards: ActionCard[];
 
@@ -23,6 +26,7 @@ interface PortfolioStore {
   setError: (error: Error | null) => void;
   setSnaptrade: (creds: { userId: string; userSecret: string } | null) => void;
   setActiveWidgets: (ids: string[]) => void;
+  setDismissedWidgets: (ids: string[]) => void;
   setLayout: (layout: GridLayout) => void;
   addActionCard: (card: ActionCard) => void;
   dismissActionCard: (id: string) => void;
@@ -49,6 +53,7 @@ export const usePortfolioStore = create<PortfolioStore>()(
       error: null,
       snaptrade: null,
       activeWidgets: [],
+      dismissedWidgets: [],
       layout: [],
       actionCards: [],
 
@@ -58,6 +63,7 @@ export const usePortfolioStore = create<PortfolioStore>()(
       setError: (error) => set({ error }),
       setSnaptrade: (snaptrade) => set({ snaptrade }),
       setActiveWidgets: (activeWidgets) => set({ activeWidgets }),
+      setDismissedWidgets: (dismissedWidgets) => set({ dismissedWidgets }),
       setLayout: (layout) => set({ layout }),
       addActionCard: (card) =>
         set((s) => ({
@@ -81,6 +87,7 @@ export const usePortfolioStore = create<PortfolioStore>()(
           error: null,
           snaptrade: null,
           activeWidgets: [],
+          dismissedWidgets: [],
           layout: [],
           actionCards: [],
         }),
@@ -102,6 +109,7 @@ export const usePortfolioStore = create<PortfolioStore>()(
       partialize: (state) => ({
         snaptrade: state.snaptrade,
         activeWidgets: state.activeWidgets,
+        dismissedWidgets: state.dismissedWidgets,
         layout: state.layout,
         actionCards: state.actionCards,
       }),

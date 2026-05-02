@@ -24,8 +24,10 @@ export function useWidgets(): {
   const profile = useUserStore((s) => s.profile);
   const uiMode = useUserStore((s) => s.uiMode);
   const active = usePortfolioStore((s) => s.activeWidgets);
+  const dismissed = usePortfolioStore((s) => s.dismissedWidgets);
   const layout = usePortfolioStore((s) => s.layout);
   const setActiveWidgets = usePortfolioStore((s) => s.setActiveWidgets);
+  const setDismissedWidgets = usePortfolioStore((s) => s.setDismissedWidgets);
   const setLayout = usePortfolioStore((s) => s.setLayout);
 
   const recommended = useMemo(
@@ -44,14 +46,18 @@ export function useWidgets(): {
   }, [profile, active.length, recommended, setActiveWidgets, setLayout]);
 
   // When a new recommended widget ships, add it to existing dashboards once.
+  // Skips ids the user has explicitly removed via the picker.
   useEffect(() => {
     if (!profile || active.length === 0) return;
-    const missing = recommended.map((w) => w.id).filter((id) => !active.includes(id));
+    const dismissedSet = new Set(dismissed);
+    const missing = recommended
+      .map((w) => w.id)
+      .filter((id) => !active.includes(id) && !dismissedSet.has(id));
     if (missing.length === 0) return;
     const next = [...active, ...missing];
     setActiveWidgets(next);
     setLayout(reconcileLayout(layout, next));
-  }, [profile, active, recommended, layout, setActiveWidgets, setLayout]);
+  }, [profile, active, dismissed, recommended, layout, setActiveWidgets, setLayout]);
 
   // Heal the persisted layout if the recommender set changed (new widgets
   // appeared, old ones disappeared). Compact vertically so there are no gaps.
@@ -67,6 +73,10 @@ export function useWidgets(): {
 
   const addWidget = useCallback(
     (id: string) => {
+      // Adding via the picker un-dismisses (so a future re-recommend is allowed).
+      if (dismissed.includes(id)) {
+        setDismissedWidgets(dismissed.filter((x) => x !== id));
+      }
       if (active.includes(id)) return;
       const next = [...active, id];
       setActiveWidgets(next);
@@ -74,7 +84,7 @@ export function useWidgets(): {
         setLayout(reconcileLayout(layout, next));
       }
     },
-    [active, layout, setActiveWidgets, setLayout],
+    [active, dismissed, layout, setActiveWidgets, setDismissedWidgets, setLayout],
   );
 
   const removeWidget = useCallback(
@@ -82,8 +92,12 @@ export function useWidgets(): {
       const nextActive = active.filter((x) => x !== id);
       setActiveWidgets(nextActive);
       setLayout(reconcileLayout(layout, nextActive));
+      // Persist the dismissal so the auto-add effect doesn't put it right back.
+      if (!dismissed.includes(id)) {
+        setDismissedWidgets([...dismissed, id]);
+      }
     },
-    [active, layout, setActiveWidgets, setLayout],
+    [active, dismissed, layout, setActiveWidgets, setDismissedWidgets, setLayout],
   );
 
   const updateLayout = useCallback(
