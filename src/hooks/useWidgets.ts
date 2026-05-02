@@ -42,6 +42,16 @@ export function useWidgets(): {
     }
   }, [profile, active.length, recommended, setActiveWidgets, setLayout]);
 
+  // When a new recommended widget ships, add it to existing dashboards once.
+  useEffect(() => {
+    if (!profile || active.length === 0) return;
+    const missing = recommended.map((w) => w.id).filter((id) => !active.includes(id));
+    if (missing.length === 0) return;
+    const next = [...active, ...missing];
+    setActiveWidgets(next);
+    setLayout(reconcileLayout(layout, next));
+  }, [profile, active, recommended, layout, setActiveWidgets, setLayout]);
+
   // Heal the persisted layout if the recommender set changed (new widgets
   // appeared, old ones disappeared). Compact vertically so there are no gaps.
   useEffect(() => {

@@ -100,6 +100,14 @@ export const WIDGETS: WidgetDefinition[] = [
     rationale: "Surfaced because you're new to investing — a one-paragraph summary of your portfolio.",
     triggers: (p) => p.answers.experience === "beginner",
   },
+  {
+    id: "stock_explorer",
+    title: "Stock Explorer",
+    category: "education",
+    priority: "P1",
+    rationale: "Search a stock, inspect the chart, and preview how it might change your portfolio before buying.",
+    triggers: always,
+  },
 
   // Mechanics
   {

@@ -38,11 +38,22 @@ export interface SurveyAnswers {
   lifeStage: LifeStage;
 }
 
+export interface Archetype {
+  key: string;
+  name: string;
+  tagline: string;
+  description: string;
+  color: string;
+  defaultAllocation: Record<string, number>;
+}
+
 export interface UserProfile {
   /** All raw survey answers verbatim. */
   answers: SurveyAnswers;
   /** Derived 0-100 risk score from pain_threshold / starting_value. */
   riskScore: number;
+  /** Named risk archetype shown after the Sleep Test. */
+  archetype?: Archetype;
   /** ISO timestamp the survey was completed. */
   completedAt: string;
 }
@@ -73,6 +84,32 @@ export interface PortfolioSnapshot {
   holdings: Holding[];
   totalValue: number;
   fetchedAt: string;
+}
+
+// ───────────────────────────── Stock explorer ─────────────────────────────
+
+export interface SearchResult {
+  symbol: string;
+  name: string;
+  exchange?: string;
+  type?: string;
+}
+
+export interface StockDetail {
+  symbol: string;
+  name: string;
+  price: number | null;
+  changePct: number | null;
+  sector: string | null;
+  peRatio: number | null;
+  beta: number | null;
+  marketCap: number | null;
+  summary: string | null;
+}
+
+export interface PricePoint {
+  date: string;
+  close: number;
 }
 
 // ─────────────────────────── Health score / weather ───────────────────────────

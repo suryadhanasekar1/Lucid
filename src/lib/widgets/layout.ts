@@ -29,7 +29,7 @@ export interface WidgetSize {
  */
 export const WIDGET_SIZES: Record<string, WidgetSize> = {
   // Core
-  health_score: { w: 6, h: 6, minW: 4, minH: 5 },
+  health_score: { w: 6, h: 9, minW: 4, minH: 8 },
   total_value: { w: 6, h: 4, minW: 3, minH: 3 },
   foundation_frontier: { w: 6, h: 4, minW: 4, minH: 3 },
   goal_progress: { w: 6, h: 4, minW: 3, minH: 3 },
@@ -43,7 +43,8 @@ export const WIDGET_SIZES: Record<string, WidgetSize> = {
   // Education
   mutual_fund_xray: { w: 6, h: 8, minW: 4, minH: 6 },
   macro_conditions: { w: 6, h: 8, minW: 4, minH: 6 },
-  what_you_own: { w: 6, h: 5, minW: 4, minH: 3 },
+  what_you_own: { w: 6, h: 6, minW: 4, minH: 5 },
+  stock_explorer: { w: 6, h: 12, minW: 5, minH: 10 },
 
   // Mechanics
   cost_tax_receipt: { w: 6, h: 8, minW: 4, minH: 5 },

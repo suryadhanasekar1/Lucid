@@ -1,4 +1,5 @@
 import type {
+  Archetype,
   HealthComponents,
   HealthScore,
   Holding,
@@ -25,11 +26,47 @@ export function deriveRiskScore(
   return Math.round(tolerated * 100);
 }
 
+export function getArchetype(riskScore: number): Archetype {
+  if (riskScore >= 76) return {
+    key: "trailblazer",
+    name: "The Trailblazer",
+    tagline: "High growth. High conviction.",
+    description: "You see market dips as buying opportunities. You are comfortable with volatility and focused on long-term growth.",
+    color: "#D85A30",
+    defaultAllocation: { stocks: 80, bonds: 10, cash: 5, alternatives: 5 },
+  };
+  if (riskScore >= 51) return {
+    key: "builder",
+    name: "The Builder",
+    tagline: "Steady growth. Balanced risk.",
+    description: "You want your money working hard but also sleep well at night. Growth matters, but so does stability.",
+    color: "#378ADD",
+    defaultAllocation: { stocks: 60, bonds: 25, cash: 10, alternatives: 5 },
+  };
+  if (riskScore >= 26) return {
+    key: "guardian",
+    name: "The Guardian",
+    tagline: "Capital first. Growth second.",
+    description: "Protecting what you have comes before growing it. You prefer steady, predictable returns.",
+    color: "#1D9E75",
+    defaultAllocation: { stocks: 40, bonds: 40, cash: 15, alternatives: 5 },
+  };
+  return {
+    key: "anchor",
+    name: "The Anchor",
+    tagline: "Safety above all.",
+    description: "You want your money protected and accessible. Minimal risk, maximum peace of mind.",
+    color: "#534AB7",
+    defaultAllocation: { stocks: 20, bonds: 45, cash: 30, alternatives: 5 },
+  };
+}
+
 export function buildProfile(answers: SurveyAnswers): UserProfile {
   const riskScore = deriveRiskScore(answers.painThreshold, answers.sleepTestStartingValue);
   return {
     answers,
     riskScore,
+    archetype: getArchetype(riskScore),
     completedAt: new Date().toISOString(),
   };
 }

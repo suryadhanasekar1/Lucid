@@ -1,49 +1,93 @@
 "use client";
 
 import { usePortfolio } from "@/hooks/usePortfolio";
-import { useUserStore } from "@/stores/userStore";
 import { WidgetCard } from "@/components/shared/v1/WidgetCard";
-import { WIDGETS_BY_ID } from "@/lib/widgets/registry";
-import { foundationFrontier } from "@/lib/portfolio/calculations";
-import { formatPct } from "@/lib/utils";
+
+const STOCK_TYPES = new Set(["stock", "etf", "mutual_fund"]);
 
 export function WhatYouOwnWidget() {
   const { holdings, totalValue } = usePortfolio();
-  const profile = useUserStore((s) => s.profile);
-  const def = WIDGETS_BY_ID["what_you_own"]!;
-  const ff = foundationFrontier(holdings);
+
   const fundCount = holdings.filter((h) => h.type === "etf" || h.type === "mutual_fund").length;
   const stockCount = holdings.filter((h) => h.type === "stock").length;
-  const equityShare = totalValue > 0 ? (ff.foundationValue + ff.frontierValue - holdings.filter(h => h.type === "bond" || h.type === "cash").reduce((s, h) => s + h.value, 0)) / totalValue : 0;
-  const horizon = profile?.answers.timelineYears ?? 10;
+  const steadyValue = holdings
+    .filter((h) => h.type === "bond" || h.type === "cash")
+    .reduce((sum, h) => sum + h.value, 0);
+  const growthValue = holdings
+    .filter((h) => STOCK_TYPES.has(h.type))
+    .reduce((sum, h) => sum + h.value, 0);
+  const growthPct = totalValue > 0 ? growthValue / totalValue : 0;
+  const steadyPct = totalValue > 0 ? steadyValue / totalValue : 0;
+  const largest = [...holdings].sort((a, b) => b.value - a.value)[0];
+  const largestPct = largest && totalValue > 0 ? largest.value / totalValue : 0;
 
-  const sentence1 = holdings.length === 0
-    ? "You don't have any holdings yet — connect your brokerage or use the sample portfolio to get started."
-    : `You own ${holdings.length} positions: ${fundCount} fund${fundCount === 1 ? "" : "s"}${stockCount > 0 ? ` and ${stockCount} single stock${stockCount === 1 ? "" : "s"}` : ""}.`;
-
-  const sentence2 = totalValue > 0
-    ? `${formatPct(equityShare, 0)} sits in stocks (most growth, most swings) and the rest in bonds and cash (steadier).`
-    : "";
-
-  const sentence3 = horizon >= 15
-    ? `With a ${horizon}-year horizon, short drops matter less than getting the long-term mix right.`
-    : `With a ${horizon}-year horizon, big stock swings matter more — your bond and cash buffer is doing real work.`;
+  const sentences =
+    holdings.length === 0
+      ? ["Connect a portfolio or load the sample to see what you own in plain English."]
+      : [
+          `You own ${holdings.length} positions: ${fundCount} fund${fundCount === 1 ? "" : "s"}${
+            stockCount > 0 ? ` and ${stockCount} individual stock${stockCount === 1 ? "" : "s"}` : ""
+          }.`,
+          `${formatPct(growthPct)} is in growth assets like stocks and funds, while ${formatPct(
+            steadyPct,
+          )} is in steadier bonds and cash.`,
+          largestPct > 0.35
+            ? `${largest?.name ?? "Your largest holding"} is doing a lot of the work, so that one position deserves attention.`
+            : "No single position is carrying the whole portfolio.",
+        ];
 
   return (
-    <WidgetCard title={def.title} rationale={def.rationale} badge="In 3 Sentences">
-      <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-3)" }}>
-        <p style={para}>{sentence1}</p>
-        {sentence2 && <p style={para}>{sentence2}</p>}
-        <p style={para}>{sentence3}</p>
+    <WidgetCard
+      title="What You Own in 3 Sentences"
+      rationale="Surfaced because you're new to investing — a plain-English summary of your portfolio."
+      hideHeader
+    >
+      <div style={shell}>
+        <div style={copyStack}>
+          {sentences.map((sentence, index) => (
+            <p key={sentence} style={index === 0 ? leadSentence : sentenceStyle}>
+              {sentence}
+            </p>
+          ))}
+        </div>
       </div>
     </WidgetCard>
   );
 }
 
-const para: React.CSSProperties = {
-  fontFamily: "var(--font-body)",
-  fontSize: 15,
-  color: "var(--text-primary)",
-  lineHeight: 1.5,
+function formatPct(value: number) {
+  return `${Math.round(value * 100)}%`;
+}
+
+const shell: React.CSSProperties = {
+  minHeight: "100%",
+  display: "flex",
+  alignItems: "center",
+  padding: "var(--space-6)",
+  border: "1px solid var(--border-subtle)",
+  borderRadius: 12,
+  background: "var(--bg-inset)",
+};
+
+const copyStack: React.CSSProperties = {
+  display: "grid",
+  gap: "var(--space-6)",
+  width: "100%",
+};
+
+const leadSentence: React.CSSProperties = {
   margin: 0,
+  color: "var(--text-primary)",
+  fontFamily: "var(--font-display)",
+  fontSize: 24,
+  fontWeight: 300,
+  lineHeight: 1.25,
+};
+
+const sentenceStyle: React.CSSProperties = {
+  margin: 0,
+  color: "var(--text-secondary)",
+  fontFamily: "var(--font-body)",
+  fontSize: 17,
+  lineHeight: 1.55,
 };

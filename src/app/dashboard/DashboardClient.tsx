@@ -13,6 +13,7 @@ import { MacroConditionsWidget } from "@/components/widgets/v1/MacroConditionsWi
 import { QuickScenariosWidget } from "@/components/widgets/v1/QuickScenariosWidget";
 import { MutualFundXRayWidget } from "@/components/widgets/v1/MutualFundXRayWidget";
 import { WhatYouOwnWidget } from "@/components/widgets/v1/WhatYouOwnWidget";
+import { StockExplorer } from "@/components/widgets/v1/StockExplorer";
 import { PainThresholdMonitorWidget } from "@/components/widgets/v1/PainThresholdMonitorWidget";
 import { WorryTranslatorWidget } from "@/components/widgets/v1/WorryTranslatorWidget";
 import { HeadlineDecoderWidget } from "@/components/widgets/v1/HeadlineDecoderWidget";
@@ -34,6 +35,7 @@ const REAL_WIDGETS: Record<string, () => JSX.Element> = {
   quick_scenarios: QuickScenariosWidget,
   mutual_fund_xray: MutualFundXRayWidget,
   what_you_own: WhatYouOwnWidget,
+  stock_explorer: StockExplorer,
   pain_threshold: PainThresholdMonitorWidget,
   worry_translator: WorryTranslatorWidget,
   headline_decoder: HeadlineDecoderWidget,
