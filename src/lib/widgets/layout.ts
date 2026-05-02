@@ -48,11 +48,14 @@ const SHAPE_PRESETS: Record<Shape, WidgetSize> = {
 const CUSTOM_SIZES: Record<string, WidgetSize> = {
   stock_explorer: { w: 8, h: 18, minW: 6, minH: 16 },
   health_score: { w: 6, h: 9, minW: 4, minH: 8 },
+  // What You Own is pinned next to portfolio_history (h=6) + total_value (h=5)
+  // = 11 rows on the left. h=11 fills the right column cleanly with no gap.
+  what_you_own: { w: 4, h: 11, minW: 3, minH: 8 },
 };
 
 /** Per-widget shape classification. Anything not listed defaults to square. */
 const WIDGET_SHAPES: Record<string, Shape> = {
-  total_value: "square",
+  total_value: "landscape",
   portfolio_history: "landscape",
   macro_conditions: "landscape",
   what_you_own: "portrait",
