@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo } from "react";
 import Link from "next/link";
+import { GraduationCap } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { usePortfolio } from "@/hooks/usePortfolio";
@@ -117,6 +118,13 @@ export function DashboardClient() {
           <div style={{ display: "flex", alignItems: "center", gap: "var(--space-2)", flexWrap: "wrap", justifyContent: "flex-end" }}>
             <HeaderHealthGauge />
             <WidgetPicker />
+            <Link
+              href="/learn"
+              className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border/40 bg-secondary/30 px-2.5 text-[12px] font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            >
+              <GraduationCap className="h-3.5 w-3.5" />
+              Learn
+            </Link>
             <UIModeToggle />
           </div>
           <div
