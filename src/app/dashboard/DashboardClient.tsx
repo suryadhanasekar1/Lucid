@@ -23,6 +23,7 @@ import { CircuitBreakerWidget } from "@/components/widgets/v1/CircuitBreakerWidg
 import { PlaceholderWidget } from "@/components/widgets/v1/PlaceholderWidget";
 import { ErrorBoundary } from "@/components/shared/v1/ErrorBoundary";
 import { UIModeToggle } from "@/components/shared/v1/UIModeToggle";
+import { WidgetPicker } from "@/components/shared/v1/WidgetPicker";
 import { buildDemoProfile } from "@/lib/demoProfile";
 import { WIDGETS_BY_ID } from "@/lib/widgets/registry";
 
@@ -46,7 +47,7 @@ export function DashboardClient() {
   const wantsDemo = searchParams.get("demo") === "1";
   const { profile, isOnboarded, setProfile } = useUserProfile();
   const { source, loading } = usePortfolio();
-  const { recommended } = useWidgets();
+  const { active } = useWidgets();
   const demoProfile = useMemo(() => (wantsDemo ? buildDemoProfile() : null), [wantsDemo]);
   const activeProfile = demoProfile ?? profile;
 
@@ -74,14 +75,14 @@ export function DashboardClient() {
     );
   }
 
-  const cells = recommended.map((w) => {
-    const Component = REAL_WIDGETS[w.id];
-    const def = WIDGETS_BY_ID[w.id];
+  const cells = active.map((id) => {
+    const Component = REAL_WIDGETS[id];
+    const def = WIDGETS_BY_ID[id];
     return {
-      id: w.id,
+      id,
       node: (
-        <ErrorBoundary title={def?.title ?? w.id}>
-          {Component ? <Component /> : <PlaceholderWidget id={w.id} />}
+        <ErrorBoundary title={def?.title ?? id}>
+          {Component ? <Component /> : <PlaceholderWidget id={id} />}
         </ErrorBoundary>
       ),
     };
@@ -115,6 +116,7 @@ export function DashboardClient() {
         <div style={{ display: "grid", justifyItems: "end", gap: "var(--space-2)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "var(--space-2)", flexWrap: "wrap", justifyContent: "flex-end" }}>
             <HeaderHealthGauge />
+            <WidgetPicker />
             <UIModeToggle />
           </div>
           <div
