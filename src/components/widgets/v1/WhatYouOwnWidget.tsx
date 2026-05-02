@@ -39,7 +39,6 @@ export function WhatYouOwnWidget() {
   const largest = sorted[0];
   const largestPct = largest && totalValue > 0 ? largest.value / totalValue : 0;
 
-  // Asset-type mix (totals per type, sorted by weight desc)
   const mixMap = new Map<string, number>();
   for (const h of holdings) {
     mixMap.set(h.type, (mixMap.get(h.type) ?? 0) + h.value);
@@ -65,7 +64,7 @@ export function WhatYouOwnWidget() {
             steadyPct,
           )} is in steadier bonds and cash.`,
           largestPct > 0.35
-            ? `${largest?.name ?? "Your largest holding"} is doing a lot of the work, so that one position deserves attention.`
+            ? `${largest?.name ?? "Your largest holding"} is doing a lot of the work.`
             : "No single position is carrying the whole portfolio.",
         ];
 
@@ -76,96 +75,89 @@ export function WhatYouOwnWidget() {
       hideHeader
     >
       <div style={shell}>
-        <div style={accentBar} aria-hidden />
-        <div style={contentCol}>
-          <div style={copyStack}>
-            <div style={eyebrowRow}>
-              <span style={eyebrow}>What you own</span>
-              {totalValue > 0 && (
-                <span style={totalText}>{formatUSD(Math.round(totalValue))}</span>
-              )}
-            </div>
-            {sentences.map((sentence, index) => (
-              <p key={sentence} style={index === 0 ? leadSentence : sentenceStyle}>
-                {sentence}
-              </p>
-            ))}
-          </div>
-
-          {holdings.length > 0 && (
-            <>
-              <Divider />
-              <Section label="Top holdings">
-                <div style={topList}>
-                  {top.map((h) => {
-                    const pct = totalValue > 0 ? h.value / totalValue : 0;
-                    return (
-                      <div key={h.ticker} style={topRow}>
-                        <div style={topLabelCol}>
-                          <span style={topTicker}>{h.ticker}</span>
-                          <span style={topName}>{h.name}</span>
-                        </div>
-                        <div style={topBarShell}>
-                          <div style={{ ...topBarFill, width: `${Math.min(100, pct * 100)}%` }} />
-                        </div>
-                        <span style={topPct}>{formatPct(pct)}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </Section>
-
-              {mix.length > 1 && (
-                <>
-                  <Divider />
-                  <Section label="Asset mix">
-                    <div style={mixBar} aria-label="Asset type breakdown">
-                      {mix.map((m) => (
-                        <div
-                          key={m.type}
-                          style={{
-                            width: `${m.pct * 100}%`,
-                            background: TYPE_COLOR[m.type] ?? "var(--text-tertiary)",
-                          }}
-                          title={`${TYPE_LABEL[m.type] ?? m.type} ${formatPct(m.pct)}`}
-                        />
-                      ))}
-                    </div>
-                    <div style={mixLegend}>
-                      {mix.map((m) => (
-                        <span key={m.type} style={mixLegendItem}>
-                          <span
-                            style={{
-                              ...mixDot,
-                              background: TYPE_COLOR[m.type] ?? "var(--text-tertiary)",
-                            }}
-                          />
-                          {TYPE_LABEL[m.type] ?? m.type} {formatPct(m.pct)}
-                        </span>
-                      ))}
-                    </div>
-                  </Section>
-                </>
-              )}
-            </>
+        {/* Header strip — eyebrow left, total right */}
+        <div style={headerRow}>
+          <span style={eyebrow}>What you own</span>
+          {totalValue > 0 && (
+            <span style={totalText}>{formatUSD(Math.round(totalValue))}</span>
           )}
         </div>
+
+        {/* Prose summary — left-aligned, generous line-height */}
+        <div style={copyStack}>
+          {sentences.map((sentence, index) => (
+            <p key={sentence} style={index === 0 ? leadSentence : sentenceStyle}>
+              {sentence}
+            </p>
+          ))}
+        </div>
+
+        {holdings.length > 0 && (
+          <>
+            <div style={divider} aria-hidden />
+
+            {/* Top holdings */}
+            <div style={section}>
+              <span style={sectionLabel}>Top holdings</span>
+              <div style={topList}>
+                {top.map((h) => {
+                  const pct = totalValue > 0 ? h.value / totalValue : 0;
+                  return (
+                    <div key={h.ticker} style={topRow}>
+                      <div style={topLabelCol}>
+                        <span style={topTicker}>{h.ticker}</span>
+                        <span style={topPct}>{formatPct(pct)}</span>
+                      </div>
+                      <div style={topBarShell}>
+                        <div style={{ ...topBarFill, width: `${Math.min(100, pct * 100)}%` }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {mix.length > 1 && (
+              <>
+                <div style={divider} aria-hidden />
+
+                {/* Asset mix */}
+                <div style={section}>
+                  <span style={sectionLabel}>Asset mix</span>
+                  <div style={mixBar} aria-label="Asset type breakdown">
+                    {mix.map((m) => (
+                      <div
+                        key={m.type}
+                        style={{
+                          width: `${m.pct * 100}%`,
+                          background: TYPE_COLOR[m.type] ?? "var(--text-tertiary)",
+                        }}
+                        title={`${TYPE_LABEL[m.type] ?? m.type} ${formatPct(m.pct)}`}
+                      />
+                    ))}
+                  </div>
+                  <div style={mixLegend}>
+                    {mix.map((m) => (
+                      <span key={m.type} style={mixLegendItem}>
+                        <span
+                          style={{
+                            ...mixDot,
+                            background: TYPE_COLOR[m.type] ?? "var(--text-tertiary)",
+                          }}
+                        />
+                        {TYPE_LABEL[m.type] ?? m.type}
+                        <span style={mixLegendPct}>{formatPct(m.pct)}</span>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+          </>
+        )}
       </div>
     </WidgetCard>
   );
-}
-
-function Section({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div style={{ display: "grid", gap: "var(--space-2)" }}>
-      <span style={sectionLabel}>{label}</span>
-      {children}
-    </div>
-  );
-}
-
-function Divider() {
-  return <div style={divider} aria-hidden />;
 }
 
 function formatPct(value: number) {
@@ -174,77 +166,60 @@ function formatPct(value: number) {
 
 const shell: React.CSSProperties = {
   minHeight: "100%",
-  display: "flex",
-  alignItems: "stretch",
-  gap: "var(--space-4)",
-  padding: "var(--space-5)",
-  border: "1px solid var(--border-subtle)",
-  borderRadius: 12,
-  background: "linear-gradient(180deg, var(--bg-inset) 0%, var(--bg-elevated) 100%)",
-  position: "relative",
-  overflow: "hidden",
-};
-
-const accentBar: React.CSSProperties = {
-  width: 3,
-  borderRadius: 999,
-  background: "linear-gradient(180deg, var(--gold-bright), var(--gold-primary), transparent)",
-  flexShrink: 0,
-};
-
-const contentCol: React.CSSProperties = {
+  width: "100%",
   display: "flex",
   flexDirection: "column",
   gap: "var(--space-4)",
-  width: "100%",
-  minWidth: 0,
+  padding: "var(--space-5) var(--space-4)",
 };
 
-const copyStack: React.CSSProperties = {
-  display: "grid",
-  gap: "var(--space-2)",
-  width: "100%",
-};
-
-const eyebrowRow: React.CSSProperties = {
+const headerRow: React.CSSProperties = {
   display: "flex",
   alignItems: "baseline",
   justifyContent: "space-between",
   gap: "var(--space-3)",
+  paddingBottom: "var(--space-2)",
+  borderBottom: "1px solid var(--border-subtle)",
 };
 
 const eyebrow: React.CSSProperties = {
   fontFamily: "var(--font-body)",
-  fontSize: 11,
+  fontSize: 10,
   fontWeight: 600,
-  letterSpacing: 1.4,
+  letterSpacing: 1.5,
   textTransform: "uppercase",
   color: "var(--gold-primary)",
 };
 
 const totalText: React.CSSProperties = {
   fontFamily: "var(--font-mono)",
-  fontSize: 12,
-  color: "var(--text-secondary)",
+  fontSize: 13,
+  color: "var(--text-primary)",
   fontVariantNumeric: "tabular-nums",
+  fontWeight: 500,
+};
+
+const copyStack: React.CSSProperties = {
+  display: "flex",
+  flexDirection: "column",
+  gap: "var(--space-2)",
 };
 
 const leadSentence: React.CSSProperties = {
   margin: 0,
   color: "var(--text-primary)",
   fontFamily: "var(--font-display)",
-  fontSize: 22,
+  fontSize: 18,
   fontWeight: 300,
-  lineHeight: 1.25,
-  marginTop: "var(--space-1)",
+  lineHeight: 1.35,
 };
 
 const sentenceStyle: React.CSSProperties = {
   margin: 0,
   color: "var(--text-secondary)",
   fontFamily: "var(--font-body)",
-  fontSize: 14,
-  lineHeight: 1.5,
+  fontSize: 13,
+  lineHeight: 1.55,
 };
 
 const divider: React.CSSProperties = {
@@ -252,33 +227,37 @@ const divider: React.CSSProperties = {
   background: "var(--border-subtle)",
 };
 
+const section: React.CSSProperties = {
+  display: "flex",
+  flexDirection: "column",
+  gap: "var(--space-2)",
+};
+
 const sectionLabel: React.CSSProperties = {
   fontFamily: "var(--font-body)",
   fontSize: 10,
   fontWeight: 600,
-  letterSpacing: 1.2,
+  letterSpacing: 1.4,
   textTransform: "uppercase",
   color: "var(--text-tertiary)",
 };
 
 const topList: React.CSSProperties = {
   display: "grid",
-  gap: 6,
+  gap: "var(--space-2)",
 };
 
 const topRow: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "minmax(0, 1.4fr) minmax(60px, 1fr) auto",
-  gap: "var(--space-3)",
-  alignItems: "center",
-  fontSize: 12,
+  display: "flex",
+  flexDirection: "column",
+  gap: 4,
 };
 
 const topLabelCol: React.CSSProperties = {
   display: "flex",
-  flexDirection: "column",
-  gap: 2,
-  minWidth: 0,
+  alignItems: "baseline",
+  justifyContent: "space-between",
+  gap: "var(--space-2)",
 };
 
 const topTicker: React.CSSProperties = {
@@ -286,19 +265,18 @@ const topTicker: React.CSSProperties = {
   fontSize: 12,
   color: "var(--gold-primary)",
   fontWeight: 600,
+  letterSpacing: 0.3,
 };
 
-const topName: React.CSSProperties = {
-  fontFamily: "var(--font-body)",
+const topPct: React.CSSProperties = {
+  fontFamily: "var(--font-mono)",
   fontSize: 11,
-  color: "var(--text-tertiary)",
-  whiteSpace: "nowrap",
-  overflow: "hidden",
-  textOverflow: "ellipsis",
+  color: "var(--text-secondary)",
+  fontVariantNumeric: "tabular-nums",
 };
 
 const topBarShell: React.CSSProperties = {
-  height: 6,
+  height: 4,
   borderRadius: 999,
   background: "rgba(245, 245, 240, 0.06)",
   overflow: "hidden",
@@ -311,27 +289,19 @@ const topBarFill: React.CSSProperties = {
   transition: "width 240ms ease",
 };
 
-const topPct: React.CSSProperties = {
-  fontFamily: "var(--font-mono)",
-  fontSize: 11,
-  color: "var(--text-secondary)",
-  fontVariantNumeric: "tabular-nums",
-  minWidth: 32,
-  textAlign: "right",
-};
-
 const mixBar: React.CSSProperties = {
   display: "flex",
-  height: 8,
+  height: 6,
   borderRadius: 999,
   overflow: "hidden",
   background: "rgba(245, 245, 240, 0.04)",
 };
 
 const mixLegend: React.CSSProperties = {
-  display: "flex",
-  flexWrap: "wrap",
-  gap: "var(--space-2)",
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(72px, 1fr))",
+  gap: "6px var(--space-3)",
+  paddingTop: 2,
 };
 
 const mixLegendItem: React.CSSProperties = {
@@ -343,9 +313,18 @@ const mixLegendItem: React.CSSProperties = {
   color: "var(--text-secondary)",
 };
 
+const mixLegendPct: React.CSSProperties = {
+  marginLeft: "auto",
+  fontFamily: "var(--font-mono)",
+  fontSize: 11,
+  color: "var(--text-tertiary)",
+  fontVariantNumeric: "tabular-nums",
+};
+
 const mixDot: React.CSSProperties = {
-  width: 8,
-  height: 8,
+  width: 7,
+  height: 7,
   borderRadius: 999,
   display: "inline-block",
+  flexShrink: 0,
 };
