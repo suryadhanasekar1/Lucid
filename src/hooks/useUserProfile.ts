@@ -64,6 +64,7 @@ function isComplete(d: SurveyDraft): d is SurveyAnswers {
     typeof d.sleepTestStartingValue === "number" &&
     typeof d.worry === "string" &&
     typeof d.checkIn === "string" &&
-    typeof d.lifeStage === "string"
+    typeof d.lifeStage === "string" &&
+    typeof d.uiMode === "string"
   );
 }

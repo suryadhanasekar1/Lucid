@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { callClaude, tryParseJson } from "@/lib/claude/client";
+import { detectLifeEvent, getLifeEventAdjustments } from "@/lib/agents/lifeEvent";
 import { getMacroSnapshot } from "@/lib/macro/fred";
 import { ipFromRequest, rateLimit } from "@/lib/rate-limit";
-import type { Citation, MacroSnapshot, UserProfile, WorryResponse } from "@/types";
+import type { Citation, ConversationMessage, MacroSnapshot, UserProfile, WorryResponse } from "@/types";
 
 const RPM = Number(process.env.RATE_LIMIT_AI_RPM ?? 20);
 
@@ -23,7 +24,9 @@ Output strictly as JSON matching this shape:
 {
   "summary": "...",       // 2-3 sentence plain-English translation
   "forYou": "...",        // 1-2 sentences tied to their portfolio + profile
-  "suggestedActions": ["...", "..."]  // 0-2 short imperative lines
+  "suggestedActions": ["...", "..."], // 0-2 short imperative lines
+  "classification": "panic_sell | fomo_buy | news_anxiety | life_event | peer_pressure | general_question",
+  "confidence": "low | medium | high"
 }
 No prose outside the JSON block.`;
 
@@ -31,10 +34,13 @@ interface ParsedShape {
   summary?: unknown;
   forYou?: unknown;
   suggestedActions?: unknown;
+  classification?: unknown;
+  confidence?: unknown;
 }
 
 interface RequestBody {
   worry?: string;
+  messages?: ConversationMessage[];
   profile?: UserProfile;
   totalValue?: number;
 }
@@ -55,10 +61,15 @@ export async function POST(req: Request) {
   } catch {
     return NextResponse.json({ error: "invalid_json" }, { status: 400 });
   }
-  const worry = (body.worry ?? "").trim();
+  const incomingMessages = Array.isArray(body.messages) ? body.messages : [];
+  const lastUserMessage = [...incomingMessages].reverse().find((m) => m?.role === "user")?.content;
+  const worry = (body.worry ?? lastUserMessage ?? "").trim();
   if (!worry) return NextResponse.json({ error: "worry_required" }, { status: 400 });
   if (worry.length > 500) {
     return NextResponse.json({ error: "worry_too_long" }, { status: 400 });
+  }
+  if (/<\s*script/i.test(worry)) {
+    return NextResponse.json({ error: "unsafe_input" }, { status: 400 });
   }
 
   const { snapshot } = await getMacroSnapshot();
@@ -80,6 +91,7 @@ fed funds=${snapshot.fedFundsRate.value}%, \
 
   const fallback = buildFallback(worry, snapshot, profile);
 
+  const conversation = normalizeConversation(incomingMessages, worry);
   const result = await callClaude(
     {
       systemBlocks: [
@@ -87,6 +99,7 @@ fed funds=${snapshot.fedFundsRate.value}%, \
         { text: `${macroLine}\n${profileLine}`, cache: false },
       ],
       userText: `User worry: ${worry}`,
+      messages: conversation,
     },
     { maxTokens: 600, fallback: JSON.stringify(fallback) },
   );
@@ -101,10 +114,39 @@ fed funds=${snapshot.fedFundsRate.value}%, \
             ? parsed.suggestedActions.filter((s): s is string => typeof s === "string").slice(0, 2)
             : fallback.suggestedActions,
           citations: buildCitations(snapshot),
+          classification: typeof parsed.classification === "string" ? parsed.classification : fallback.classification,
+          confidence: isConfidence(parsed.confidence) ? parsed.confidence : fallback.confidence,
         }
       : { ...fallback, citations: buildCitations(snapshot) };
 
-  return NextResponse.json({ ...response, source: result.source });
+  const event = detectLifeEvent(worry);
+  const life_event_detected =
+    event && profile
+      ? {
+          event,
+          adjustment: getLifeEventAdjustments(event, profile.riskScore),
+        }
+      : null;
+
+  return NextResponse.json({ ...response, life_event_detected, source: result.source });
+}
+
+function normalizeConversation(
+  messages: ConversationMessage[],
+  worry: string,
+): Array<{ role: "user" | "assistant"; content: string }> {
+  const normalized = messages
+    .filter((m) => (m.role === "user" || m.role === "assistant") && typeof m.content === "string")
+    .slice(-12)
+    .map((m) => ({ role: m.role, content: m.content.slice(0, 700) }));
+  if (normalized.length === 0 || normalized[normalized.length - 1]?.role !== "user") {
+    normalized.push({ role: "user", content: worry });
+  }
+  return normalized;
+}
+
+function isConfidence(value: unknown): value is "low" | "medium" | "high" {
+  return value === "low" || value === "medium" || value === "high";
 }
 
 function buildCitations(snapshot: MacroSnapshot): Citation[] {
@@ -119,7 +161,7 @@ function buildFallback(
   worry: string,
   snapshot: MacroSnapshot,
   profile: UserProfile | undefined,
-): Omit<WorryResponse, "citations"> {
+): Omit<WorryResponse, "citations" | "life_event_detected"> {
   const w = worry.toLowerCase();
   const cpi = snapshot.inflation.value;
   const dff = snapshot.fedFundsRate.value;
@@ -148,6 +190,15 @@ function buildFallback(
   return {
     summary,
     forYou: profileNudge,
+    classification:
+      w.includes("crash") || w.includes("losing")
+        ? "panic_sell"
+        : w.includes("tesla") || w.includes("buy")
+          ? "fomo_buy"
+          : w.includes("job") || w.includes("baby") || w.includes("house")
+            ? "life_event"
+            : "general_question",
+    confidence: "medium",
     suggestedActions:
       w.includes("crash") || w.includes("losing")
         ? [

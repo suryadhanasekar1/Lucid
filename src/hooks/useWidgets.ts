@@ -22,14 +22,15 @@ export function useWidgets(): {
   updateLayout: (layout: GridLayout) => void;
 } {
   const profile = useUserStore((s) => s.profile);
+  const uiMode = useUserStore((s) => s.uiMode);
   const active = usePortfolioStore((s) => s.activeWidgets);
   const layout = usePortfolioStore((s) => s.layout);
   const setActiveWidgets = usePortfolioStore((s) => s.setActiveWidgets);
   const setLayout = usePortfolioStore((s) => s.setLayout);
 
   const recommended = useMemo(
-    () => (profile ? recommendWidgets(profile) : []),
-    [profile],
+    () => (profile ? recommendWidgets(profile, uiMode === "analyst" ? "advanced" : "simple") : []),
+    [profile, uiMode],
   );
 
   // Seed the active set + layout the first time a profile shows up.
@@ -41,6 +42,16 @@ export function useWidgets(): {
       setLayout(buildInitialLayout(ids));
     }
   }, [profile, active.length, recommended, setActiveWidgets, setLayout]);
+
+  // When a new recommended widget ships, add it to existing dashboards once.
+  useEffect(() => {
+    if (!profile || active.length === 0) return;
+    const missing = recommended.map((w) => w.id).filter((id) => !active.includes(id));
+    if (missing.length === 0) return;
+    const next = [...active, ...missing];
+    setActiveWidgets(next);
+    setLayout(reconcileLayout(layout, next));
+  }, [profile, active, recommended, layout, setActiveWidgets, setLayout]);
 
   // Heal the persisted layout if the recommender set changed (new widgets
   // appeared, old ones disappeared). Compact vertically so there are no gaps.

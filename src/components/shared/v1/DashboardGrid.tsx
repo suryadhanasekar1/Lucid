@@ -83,8 +83,16 @@ export function DashboardGrid({ cells }: Props) {
   // (Shouldn't happen with `useWidgets` reconciler, but safe.)
   const rgl: Layout[] = cells.map((c) => {
     const found = layout.find((l) => l.i === c.id);
-    if (found) return found;
     const size = sizeFor(c.id);
+    if (found) {
+      return {
+        ...found,
+        w: Math.max(found.w, size.minW),
+        h: Math.max(found.h, size.minH),
+        minW: size.minW,
+        minH: size.minH,
+      };
+    }
     return {
       i: c.id,
       x: 0,

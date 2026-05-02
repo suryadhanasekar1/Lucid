@@ -11,6 +11,7 @@ interface Props {
    * removed the gold eyebrow. The prop is accepted but ignored.
    */
   badge?: string;
+  hideHeader?: boolean;
   children: ReactNode;
 }
 
@@ -24,14 +25,14 @@ interface Props {
  *     the drag-handle dot (rendered by DashboardGrid as an absolute child).
  *   - Padding is tighter on top so the drag handle sits flush.
  */
-export function WidgetCard({ title, rationale, children }: Props) {
+export function WidgetCard({ title, rationale, hideHeader = false, children }: Props) {
   return (
     <article
       style={{
         background: "var(--bg-elevated)",
         border: "1px solid var(--border-subtle)",
         borderRadius: 14,
-        padding: "var(--space-5) var(--space-5) var(--space-5)",
+        padding: "var(--space-6)",
         height: "100%",
         display: "flex",
         flexDirection: "column",
@@ -40,31 +41,33 @@ export function WidgetCard({ title, rationale, children }: Props) {
         boxShadow: "none",
       }}
     >
-      <header
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "var(--space-3)",
-          /* Reserve room for the drag handle that DashboardGrid lays over the
-           * top-right corner of every cell. */
-          paddingRight: 28,
-        }}
-      >
-        <h3
+      {!hideHeader && (
+        <header
           style={{
-            fontFamily: "var(--font-body)",
-            fontSize: 13,
-            fontWeight: 500,
-            letterSpacing: "0.005em",
-            color: "var(--text-primary)",
-            margin: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "var(--space-3)",
+            /* Reserve room for the drag handle that DashboardGrid lays over the
+             * top-right corner of every cell. */
+            paddingRight: 28,
           }}
         >
-          {title}
-        </h3>
-        {rationale && <WhyIsThisHere rationale={rationale} />}
-      </header>
+          <h3
+            style={{
+              fontFamily: "var(--font-body)",
+              fontSize: 13,
+              fontWeight: 500,
+              letterSpacing: "0.005em",
+              color: "var(--text-primary)",
+              margin: 0,
+            }}
+          >
+            {title}
+          </h3>
+          {rationale && <WhyIsThisHere rationale={rationale} />}
+        </header>
+      )}
       <div style={{ flex: 1, minHeight: 0 }}>{children}</div>
     </article>
   );

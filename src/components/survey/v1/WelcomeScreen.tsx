@@ -10,9 +10,10 @@ export function WelcomeScreen({ onStart }: { onStart: () => void }) {
           style={{
             fontFamily: "var(--font-display)",
             fontWeight: 300,
-            fontSize: 56,
+            fontSize: "clamp(36px, 7vw, 56px)",
             lineHeight: 1.05,
-            letterSpacing: "-0.02em",
+            letterSpacing: 0,
+            margin: 0,
           }}
         >
           Compass helps you grow your money without losing sleep over it.
@@ -30,7 +31,7 @@ export function WelcomeScreen({ onStart }: { onStart: () => void }) {
         </p>
       </div>
 
-      <div style={{ display: "flex", gap: "var(--space-3)" }}>
+      <div style={{ display: "flex", gap: "var(--space-3)", flexWrap: "wrap" }}>
         <PrimaryButton onClick={onStart}>Begin</PrimaryButton>
       </div>
     </section>

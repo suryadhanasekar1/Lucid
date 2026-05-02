@@ -29,6 +29,7 @@ function getClient(): Anthropic | null {
 export interface ClaudeMessage {
   systemBlocks: Array<{ text: string; cache?: boolean }>;
   userText: string;
+  messages?: Array<{ role: "user" | "assistant"; content: string }>;
 }
 
 export interface ClaudeCallResult {
@@ -55,7 +56,7 @@ export async function callClaude(
       model: opts.model ?? CLAUDE_MODEL_PRIMARY,
       max_tokens: opts.maxTokens ?? 600,
       system,
-      messages: [{ role: "user", content: msg.userText }],
+      messages: msg.messages ?? [{ role: "user", content: msg.userText }],
     });
 
     const text = response.content

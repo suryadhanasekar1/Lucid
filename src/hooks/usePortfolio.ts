@@ -2,7 +2,10 @@
 
 import { useCallback, useEffect, useRef } from "react";
 import { usePortfolioStore } from "@/stores/portfolioStore";
-import type { Holding, PortfolioSource } from "@/types";
+import { useUserStore } from "@/stores/userStore";
+import { computeHealthScore } from "@/lib/portfolio/calculations";
+import { runAllAgents } from "@/lib/agents";
+import type { Holding, MacroSnapshot, PortfolioSource } from "@/types";
 
 interface SamplePortfolioFile {
   source: "sample";
@@ -56,8 +59,35 @@ export function usePortfolio(): {
   const setHoldings = usePortfolioStore((s) => s.setHoldings);
   const setLoading = usePortfolioStore((s) => s.setLoading);
   const setError = usePortfolioStore((s) => s.setError);
+  const addActionCard = usePortfolioStore((s) => s.addActionCard);
+  const profile = useUserStore((s) => s.profile);
 
   const initialized = useRef(false);
+
+  const pushActionCards = useCallback(
+    async (nextHoldings: Holding[]) => {
+      if (!profile || nextHoldings.length === 0) return;
+      try {
+        const macroRes = await fetch("/api/macro/conditions", { cache: "no-store" });
+        const macroData = (await macroRes.json()) as { snapshot?: MacroSnapshot };
+        if (!macroData.snapshot) return;
+        const health = computeHealthScore(nextHoldings, profile);
+        const cards = await runAllAgents(
+          nextHoldings,
+          {
+            timeHorizon: profile.answers.timelineYears,
+            riskScore: profile.riskScore,
+          },
+          health.score,
+          macroData.snapshot,
+        );
+        cards.forEach(addActionCard);
+      } catch {
+        // Agent cards are helpful, never blocking.
+      }
+    },
+    [addActionCard, profile],
+  );
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -66,19 +96,22 @@ export function usePortfolio(): {
         const real = await fetchSnaptrade(snaptrade.userId, snaptrade.userSecret);
         if (real && real.length > 0) {
           setHoldings(real, "snaptrade");
+          await pushActionCards(real);
           return;
         }
       }
       const sample = await fetchSample();
       setHoldings(sample, "sample");
+      await pushActionCards(sample);
     } catch (err) {
       setError(err as Error);
       const sample = await fetchSample();
       setHoldings(sample, "sample");
+      await pushActionCards(sample);
     } finally {
       setLoading(false);
     }
-  }, [snaptrade, setHoldings, setLoading, setError]);
+  }, [pushActionCards, snaptrade, setHoldings, setLoading, setError]);
 
   useEffect(() => {
     if (initialized.current) return;

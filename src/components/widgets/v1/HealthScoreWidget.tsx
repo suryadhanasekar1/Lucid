@@ -1,158 +1,248 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useHealthScore } from "@/hooks/useHealthScore";
-import { WidgetCard } from "@/components/shared/v1/WidgetCard";
-import { ExplainTooltip } from "@/components/shared/v1/ExplainTooltip";
+import type { CSSProperties } from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import AnimatedDownloadButton from "@/components/ui/download-hover-button";
 import { ShowMeTheMath } from "@/components/shared/v1/ShowMeTheMath";
-import { WIDGETS_BY_ID } from "@/lib/widgets/registry";
+import { WidgetCard } from "@/components/shared/v1/WidgetCard";
+import { useHealthScore } from "@/hooks/useHealthScore";
 import { usePrefersReducedMotion } from "@/lib/a11y";
+import { WIDGETS_BY_ID } from "@/lib/widgets/registry";
+import type { HealthComponents, Weather } from "@/types";
 
-const WEATHER_COPY = {
-  sunny: "Looking sunny",
-  partly_cloudy: "Partly cloudy",
-  cloudy: "Cloudy",
-  stormy: "Stormy",
-} as const;
+type HealthScoreResult = {
+  score?: number | null;
+  weather?: Weather;
+  components?: Partial<HealthComponents>;
+  loading?: boolean;
+};
+
+const CARD_TITLE = "Portfolio Health";
+const CARD_RATIONALE =
+  "Shows a beginner-friendly snapshot of diversification, risk level, fees, and goal alignment.";
+
+const clampScore = (value: number) => Math.max(0, Math.min(100, Math.round(value)));
+
+const segmentColor = (value: number) => {
+  if (value >= 70) return "var(--signal-positive)";
+  if (value >= 40) return "var(--signal-warning)";
+  return "var(--signal-negative)";
+};
+
+const healthSummary = (score: number) => {
+  if (score >= 80) return "Looks strong. Your portfolio is balanced across the main checks.";
+  if (score >= 60) return "Looks mostly steady. A couple of areas may deserve attention.";
+  if (score >= 40) return "Needs a checkup. Start with concentration, risk level, and fees.";
+  return "Needs care. This score suggests the current mix may not fit your plan yet.";
+};
 
 export function HealthScoreWidget() {
-  const { score, weather, components } = useHealthScore();
-  const def = WIDGETS_BY_ID["health_score"]!;
-  const reducedMotion = usePrefersReducedMotion();
-  const [arc, setArc] = useState(0);
+  const health = useHealthScore() as HealthScoreResult;
+  const prefersReducedMotion = useReducedMotion();
+  const appReducedMotion = usePrefersReducedMotion();
+  const reducedMotion = prefersReducedMotion === true || appReducedMotion;
+  const def = WIDGETS_BY_ID["health_score"];
 
-  useEffect(() => {
-    if (reducedMotion) {
-      setArc(score);
-      return;
-    }
-    const t = window.setTimeout(() => setArc(score), 60);
-    return () => window.clearTimeout(t);
-  }, [score, reducedMotion]);
+  const components: HealthComponents = {
+    diversification: clampScore(health.components?.diversification ?? 0),
+    goalAlignment: clampScore(health.components?.goalAlignment ?? 0),
+    risk: clampScore(health.components?.risk ?? 0),
+    fees: clampScore(health.components?.fees ?? 0),
+  };
 
-  // Gauge math: half-arc 180° from 0 → score.
-  const radius = 64;
-  const cx = 80;
-  const cy = 80;
-  const startA = Math.PI;
-  const endA = Math.PI + (arc / 100) * Math.PI;
-  const x1 = cx + radius * Math.cos(startA);
-  const y1 = cy + radius * Math.sin(startA);
-  const x2 = cx + radius * Math.cos(endA);
-  const y2 = cy + radius * Math.sin(endA);
-  const largeArc = arc > 50 ? 1 : 0;
-  const arcPath = `M ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2}`;
+  if (health.loading || health.score === undefined) {
+    return (
+      <WidgetCard title={CARD_TITLE} rationale={def?.rationale ?? CARD_RATIONALE}>
+        <div style={skeletonShell} aria-label="Loading portfolio health" role="status" />
+      </WidgetCard>
+    );
+  }
+
+  const score = clampScore(health.score ?? 0);
+  const allComponentsZero = Object.values(components).every((value) => value === 0);
+
+  if (allComponentsZero) {
+    return (
+      <WidgetCard title={CARD_TITLE} rationale={def?.rationale ?? CARD_RATIONALE}>
+        <div style={emptyShell}>
+          {"We're still calculating your health score. Connect a portfolio or open the sample dashboard first."}
+        </div>
+      </WidgetCard>
+    );
+  }
+
+  const segments = [
+    { label: "Diversification", value: components.diversification, color: segmentColor(components.diversification) },
+    { label: "Risk level", value: components.risk, color: segmentColor(components.risk) },
+    { label: "Fees", value: components.fees, color: segmentColor(components.fees) },
+    { label: "Goal alignment", value: components.goalAlignment, color: segmentColor(components.goalAlignment) },
+  ];
 
   return (
-    <WidgetCard title={def.title} rationale={def.rationale} badge="Health">
-      <div style={{ display: "flex", alignItems: "center", gap: "var(--space-6)" }}>
-        <svg width={160} height={96} viewBox="0 0 160 96">
-          <path
-            d="M 16 80 A 64 64 0 0 1 144 80"
-            stroke="var(--border-default)"
-            strokeWidth={6}
-            fill="none"
+    <WidgetCard title={CARD_TITLE} rationale={def?.rationale ?? CARD_RATIONALE}>
+      <div style={contentStyle}>
+        <div style={topRow}>
+          <AnimatedDownloadButton
+            score={score}
+            label="Portfolio Health"
+            summary={healthSummary(score)}
+            segments={segments}
+            reducedMotion={reducedMotion}
           />
-          <path
-            d={arcPath}
-            stroke="var(--gold-primary)"
-            strokeWidth={6}
-            fill="none"
-            strokeLinecap="round"
-            style={{ transition: reducedMotion ? "none" : "all 700ms cubic-bezier(0.22, 1, 0.36, 1)" }}
-          />
-        </svg>
-        <div>
-          <div
-            style={{
-              fontFamily: "var(--font-display)",
-              fontWeight: 300,
-              fontSize: 48,
-              lineHeight: 1,
-              color: "var(--text-primary)",
-              fontVariantNumeric: "tabular-nums",
-            }}
-          >
-            {score}
-          </div>
-          <div
-            style={{
-              fontFamily: "var(--font-body)",
-              fontSize: 13,
-              color: "var(--text-secondary)",
-              marginTop: 4,
-            }}
-          >
-            {WEATHER_COPY[weather]}
+          <div style={copyBlock}>
+            <p style={eyebrow}>Hover or tap the ring</p>
+            <h4 style={headline}>{healthSummary(score)}</h4>
+            <p style={body}>
+              This is a procedural health circle, not a professional risk model. It is calculated from
+              four visible inputs below so beginners can see exactly what changed.
+            </p>
           </div>
         </div>
-      </div>
 
-      <ul
-        style={{
-          listStyle: "none",
-          padding: 0,
-          margin: 0,
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: "var(--space-2)",
-          marginTop: "var(--space-3)",
-        }}
-      >
-        {(
-          [
-            ["diversification", "Diversification"],
-            ["goalAlignment", "Goal alignment"],
-            ["risk", "Risk fit"],
-            ["fees", "Fees"],
-          ] as const
-        ).map(([key, label]) => (
-          <li
-            key={key}
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              fontFamily: "var(--font-body)",
-              fontSize: 13,
-              color: "var(--text-secondary)",
-            }}
-          >
-            <span>{label}</span>
-            <span
-              style={{
-                fontFamily: "var(--font-mono)",
-                fontVariantNumeric: "tabular-nums",
-                color: "var(--text-primary)",
-              }}
+        <div style={componentGrid}>
+          {segments.map((segment, index) => (
+            <motion.div
+              key={segment.label}
+              initial={reducedMotion ? false : { opacity: 0, y: 6 }}
+              animate={reducedMotion ? undefined : { opacity: 1, y: 0 }}
+              transition={{ duration: reducedMotion ? 0 : 0.24, delay: index * 0.05 }}
+              style={metricCard}
             >
-              {components[key]}
-            </span>
-          </li>
-        ))}
-      </ul>
-      <div
-        style={{
-          marginTop: "var(--space-3)",
-          display: "flex",
-          flexDirection: "column",
-          gap: "var(--space-2)",
-        }}
-      >
-        <ExplainTooltip
-          topic="health_score"
-          context={{ score, weather, components }}
-        />
+              <div style={metricHeader}>
+                <span style={metricLabel}>{segment.label}</span>
+                <span style={{ ...metricValue, color: segment.color }}>{Math.round(segment.value)}/100</span>
+              </div>
+              <div style={barTrack} aria-hidden="true">
+                <span style={{ ...barFill, width: `${segment.value}%`, background: segment.color }} />
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
         <ShowMeTheMath
-          formula="Health = 0.30 × diversification + 0.25 × goal alignment + 0.25 × risk fit + 0.20 × fees"
+          formula="Health Score = diversification 30% + goal alignment 25% + risk fit 25% + fee score 20%."
           rows={[
-            { label: "Diversification (30%)", value: String(components.diversification) },
-            { label: "Goal alignment (25%)", value: String(components.goalAlignment) },
-            { label: "Risk fit (25%)", value: String(components.risk) },
-            { label: "Fees (20%)", value: String(components.fees) },
+            { label: "Diversification", value: `${components.diversification}/100` },
+            { label: "Goal alignment", value: `${components.goalAlignment}/100` },
+            { label: "Risk fit", value: `${components.risk}/100` },
+            { label: "Fees", value: `${components.fees}/100` },
           ]}
-          result={{ label: "Score", value: String(score) }}
+          result={{ label: "Health Score", value: `${score}/100` }}
         />
       </div>
     </WidgetCard>
   );
 }
+
+const contentStyle: CSSProperties = {
+  minHeight: 360,
+  display: "grid",
+  gap: "var(--space-4)",
+  alignContent: "start",
+};
+
+const topRow: CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  gap: "var(--space-4)",
+  flexWrap: "wrap",
+};
+
+const copyBlock: CSSProperties = {
+  flex: "1 1 220px",
+  minWidth: 0,
+};
+
+const eyebrow: CSSProperties = {
+  margin: 0,
+  color: "var(--gold-primary)",
+  fontFamily: "var(--font-body)",
+  fontSize: 11,
+  letterSpacing: "0.04em",
+  textTransform: "uppercase",
+};
+
+const headline: CSSProperties = {
+  margin: "var(--space-1) 0 0",
+  color: "var(--text-primary)",
+  fontFamily: "var(--font-body)",
+  fontSize: 16,
+  fontWeight: 500,
+  lineHeight: 1.3,
+};
+
+const body: CSSProperties = {
+  margin: "var(--space-2) 0 0",
+  color: "var(--text-tertiary)",
+  fontFamily: "var(--font-body)",
+  fontSize: 13,
+  lineHeight: 1.45,
+};
+
+const componentGrid: CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+  gap: "var(--space-3)",
+};
+
+const metricCard: CSSProperties = {
+  padding: "var(--space-3)",
+  border: "1px solid var(--border-subtle)",
+  borderRadius: 12,
+  background: "var(--bg-inset)",
+  display: "grid",
+  gap: "var(--space-2)",
+};
+
+const metricHeader: CSSProperties = {
+  display: "flex",
+  justifyContent: "space-between",
+  gap: "var(--space-3)",
+};
+
+const metricLabel: CSSProperties = {
+  color: "var(--text-secondary)",
+  fontFamily: "var(--font-body)",
+  fontSize: 12,
+};
+
+const metricValue: CSSProperties = {
+  color: "var(--text-primary)",
+  fontFamily: "var(--font-mono)",
+  fontSize: 12,
+  fontVariantNumeric: "tabular-nums",
+};
+
+const barTrack: CSSProperties = {
+  height: 6,
+  borderRadius: 999,
+  background: "var(--bg-elevated-2)",
+  overflow: "hidden",
+};
+
+const barFill: CSSProperties = {
+  display: "block",
+  height: "100%",
+  borderRadius: 999,
+};
+
+const skeletonShell: CSSProperties = {
+  minHeight: 280,
+  borderRadius: 32,
+  background:
+    "linear-gradient(90deg, var(--bg-elevated-2), var(--border-default), var(--bg-elevated-2))",
+  backgroundSize: "200% 100%",
+  animation: "compass-skeleton-shimmer 1200ms ease-in-out infinite",
+};
+
+const emptyShell: CSSProperties = {
+  minHeight: 280,
+  display: "grid",
+  placeItems: "center",
+  textAlign: "center",
+  color: "var(--text-secondary)",
+  fontFamily: "var(--font-body)",
+  fontSize: 15,
+  lineHeight: 1.5,
+  padding: "var(--space-6)",
+};

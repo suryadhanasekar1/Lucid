@@ -23,6 +23,8 @@ export function PrimaryButton({
     borderRadius: 999,
     cursor: disabled ? "not-allowed" : "pointer",
     transition: "background 200ms ease, color 200ms ease, border-color 200ms ease",
+    maxWidth: "100%",
+    textAlign: "center",
   } as const;
 
   const variants = {

@@ -179,8 +179,22 @@ async function main() {
 
   // Hook count stable
   const hooks = await fs.readdir(path.join(process.cwd(), "src/hooks"));
-  if (hooks.filter((f) => f.endsWith(".ts")).length === 11) ok("hook count = 11");
-  else bad(`hook count = ${hooks.length}`);
+  const requiredHooks = [
+    "useUserProfile.ts",
+    "usePortfolio.ts",
+    "useHealthScore.ts",
+    "useWidgets.ts",
+    "useScenario.ts",
+    "useWorryTranslator.ts",
+    "useHeadlineDecoder.ts",
+    "useCircuitBreaker.ts",
+    "useFundXRay.ts",
+    "useMacroConditions.ts",
+    "useExplain.ts",
+  ];
+  const missingHooks = requiredHooks.filter((hook) => !hooks.includes(hook));
+  if (missingHooks.length === 0) ok(`original hook contract present (${hooks.filter((f) => f.endsWith(".ts")).length} hooks total)`);
+  else bad(`missing original hooks: ${missingHooks.join(", ")}`);
 
   if (failures > 0) {
     console.error(`\n${failures} failures`);
