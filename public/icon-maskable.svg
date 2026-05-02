@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0A0A0B"/>
+      <stop offset="100%" stop-color="#1A1A1F"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#D4AF37"/>
+      <stop offset="100%" stop-color="#8A7548"/>
+    </linearGradient>
+  </defs>
+  <!-- maskable icons need full-bleed; safe area is the central 80% -->
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <!-- Compass within safe area -->
+  <circle cx="256" cy="256" r="120" fill="none" stroke="url(#gold)" stroke-width="5" opacity="0.5"/>
+  <polygon points="256,140 276,256 256,236 236,256" fill="url(#gold)"/>
+  <polygon points="256,372 236,256 256,276 276,256" fill="#3D3D3A"/>
+  <circle cx="256" cy="256" r="10" fill="#D4AF37" stroke="#0A0A0B" stroke-width="3"/>
+</svg>

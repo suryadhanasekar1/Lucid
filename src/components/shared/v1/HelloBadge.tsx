@@ -7,8 +7,8 @@ export function HelloBadge() {
       className="glass-surface-gold"
       style={{
         position: "fixed",
-        top: 16,
-        left: 16,
+        top: "calc(env(safe-area-inset-top, 0px) + 16px)",
+        left: "calc(env(safe-area-inset-left, 0px) + 16px)",
         zIndex: 60,
         padding: "6px 14px",
         borderRadius: 999,
