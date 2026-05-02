@@ -100,9 +100,9 @@ export const WIDGET_SIZES: Record<string, WidgetSize> = (() => {
  * bin-packer runs on the rest. They land at the top of the dashboard.
  */
 const PINNED_ORDER = [
-  "total_value",       // top-left square — primary stat
-  "what_you_own",      // top-right portrait — plain-English summary
-  "portfolio_history", // landscape strip below — chart
+  "portfolio_history", // top — landscape balance chart, lead view
+  "total_value",       // primary stat
+  "what_you_own",      // plain-English summary
   "stock_explorer",    // big chart + explorer
 ] as const;
 
