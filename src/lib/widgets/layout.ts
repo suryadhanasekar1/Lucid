@@ -96,15 +96,30 @@ export const WIDGET_SIZES: Record<string, WidgetSize> = (() => {
 })();
 
 /**
- * Biggest-first first-fit bin-packer.
+ * Widgets in this list are placed first, in this exact order, before the
+ * bin-packer runs on the rest. They land at the top of the dashboard.
+ */
+const PINNED_ORDER = [
+  "total_value",       // top-left square — primary stat
+  "what_you_own",      // top-right portrait — plain-English summary
+  "portfolio_history", // landscape strip below — chart
+  "stock_explorer",    // big chart + explorer
+] as const;
+
+/**
+ * Pinned-first first-fit bin-packer.
  *
- * 1. Sort by area descending (priority order breaks ties).
- * 2. For each widget, scan rows top-to-bottom, columns left-to-right, and
- *    place at the topmost-leftmost slot where it fits without overlap.
- * 3. Compact vertically so trailing items pull up into any column gaps.
+ * 1. Place PINNED_ORDER widgets first, in order, at the topmost-leftmost
+ *    free slot. Pins land at the top of the grid.
+ * 2. Sort the remainder by area descending (priority breaks ties) and
+ *    fill via first-fit.
+ * 3. Compact vertically.
  */
 export function buildInitialLayout(ids: string[]): GridLayoutItem[] {
-  const items = ids
+  const idSet = new Set(ids);
+  const pinned = PINNED_ORDER.filter((id) => idSet.has(id));
+  const rest = ids
+    .filter((id) => !pinned.includes(id as (typeof PINNED_ORDER)[number]))
     .map((id, idx) => ({ id, idx, size: sizeFor(id) }))
     .sort((a, b) => {
       const areaA = a.size.w * a.size.h;
@@ -114,7 +129,8 @@ export function buildInitialLayout(ids: string[]): GridLayoutItem[] {
     });
 
   const placed: GridLayoutItem[] = [];
-  for (const { id, size } of items) {
+  const place = (id: string) => {
+    const size = sizeFor(id);
     const { x, y } = nextFreeSlot(placed, size.w, size.h);
     placed.push({
       i: id,
@@ -125,7 +141,10 @@ export function buildInitialLayout(ids: string[]): GridLayoutItem[] {
       minW: size.minW,
       minH: size.minH,
     });
-  }
+  };
+  for (const id of pinned) place(id);
+  for (const { id } of rest) place(id);
+
   return compactVertical(placed.sort((a, b) => a.y - b.y || a.x - b.x));
 }
 

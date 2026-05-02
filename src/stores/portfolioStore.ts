@@ -89,7 +89,7 @@ export const usePortfolioStore = create<PortfolioStore>()(
       name: "compass:portfolio",
       // Bumped when layout/sizing logic changes — drops old saved layouts so
       // users get the new bin-packed layout on next load.
-      version: 2,
+      version: 3,
       migrate: (persisted) => {
         const p = (persisted ?? {}) as Record<string, unknown>;
         // Drop the saved layout + active set so they re-seed via buildInitialLayout.
