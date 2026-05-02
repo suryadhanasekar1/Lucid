@@ -18,14 +18,17 @@ export function HeaderHealthGauge() {
   const riskScore = Math.max(0, Math.min(100, Math.round(analysis.riskFitScore)));
   const overallScore = Math.max(0, Math.min(100, Math.round(score)));
   const rebalanced = Boolean(lastResult);
-  const riskColor = rebalanced ? "var(--signal-positive)" : riskStatusColor(analysis.status);
-  const accentColor = rebalanced ? "var(--signal-positive)" : "var(--signal-info)";
-  const accentBorder = rebalanced
-    ? "rgba(127, 176, 105, 0.55)"
-    : "rgba(107, 143, 181, 0.45)";
-  const accentGlow = rebalanced
-    ? "0 0 24px rgba(127, 176, 105, 0.25), var(--shadow-elevated)"
-    : "var(--shadow-elevated)";
+  // Border + accent track the actual risk status so the panel reads at a glance:
+  //   risky    → red    (#C76B5A — signal-negative)
+  //   caution  → amber  (#E8B547 — signal-warning)
+  //   optimized → green (#7FB069 — signal-positive)
+  // After a rebalance, analysis.status flips to "optimized" automatically so
+  // the panel goes green without any extra wiring.
+  const statusTone = STATUS_TONES[analysis.status];
+  const accentColor = statusTone.color;
+  const riskColor = statusTone.color;
+  const accentBorder = statusTone.border;
+  const accentGlow = `0 0 28px ${statusTone.glow}, var(--shadow-elevated)`;
   const segments = [
     { label: "Diversification", value: components.diversification, color: scoreColor(components.diversification) },
     { label: "Fees", value: components.fees, color: scoreColor(components.fees) },
@@ -160,11 +163,27 @@ function scoreColor(value: number) {
   return "var(--signal-negative)";
 }
 
-function riskStatusColor(status: "optimized" | "caution" | "risky") {
-  if (status === "optimized") return "var(--signal-positive)";
-  if (status === "caution") return "var(--signal-warning)";
-  return "var(--signal-negative)";
-}
+/** Color, border (translucent), and glow tints for each risk status.
+ * Drives the Portfolio Health Insights panel chrome so the border reflects
+ * the actual portfolio score — red when risky, amber when caution, green
+ * when optimized. */
+const STATUS_TONES = {
+  optimized: {
+    color: "var(--signal-positive)",
+    border: "rgba(127, 176, 105, 0.55)",
+    glow: "rgba(127, 176, 105, 0.30)",
+  },
+  caution: {
+    color: "var(--signal-warning)",
+    border: "rgba(232, 181, 71, 0.55)",
+    glow: "rgba(232, 181, 71, 0.28)",
+  },
+  risky: {
+    color: "var(--signal-negative)",
+    border: "rgba(199, 107, 90, 0.60)",
+    glow: "rgba(199, 107, 90, 0.30)",
+  },
+} as const;
 
 function riskMessage(status: "optimized" | "caution" | "risky") {
   if (status === "optimized") {
