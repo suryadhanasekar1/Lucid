@@ -1,0 +1,93 @@
+{
+  "fetchedAt": "2026-04-30T12:00:00Z",
+  "funds": {
+    "VTSAX": {
+      "fundTicker": "VTSAX",
+      "fundName": "Vanguard Total Stock Market Index Fund Admiral Shares",
+      "asOf": "2026-01-31",
+      "totalHoldings": 3742,
+      "holdings": [
+        { "ticker": "AAPL", "name": "Apple Inc.", "weight": 0.0612 },
+        { "ticker": "MSFT", "name": "Microsoft Corp.", "weight": 0.0571 },
+        { "ticker": "NVDA", "name": "NVIDIA Corp.", "weight": 0.0498 },
+        { "ticker": "AMZN", "name": "Amazon.com Inc.", "weight": 0.0344 },
+        { "ticker": "META", "name": "Meta Platforms Inc.", "weight": 0.0234 },
+        { "ticker": "GOOGL", "name": "Alphabet Inc. Class A", "weight": 0.0192 },
+        { "ticker": "GOOG", "name": "Alphabet Inc. Class C", "weight": 0.0163 },
+        { "ticker": "BRK.B", "name": "Berkshire Hathaway Inc.", "weight": 0.0148 },
+        { "ticker": "TSLA", "name": "Tesla Inc.", "weight": 0.0131 },
+        { "ticker": "JPM", "name": "JPMorgan Chase & Co.", "weight": 0.0124 }
+      ]
+    },
+    "VTI": {
+      "fundTicker": "VTI",
+      "fundName": "Vanguard Total Stock Market ETF",
+      "asOf": "2026-01-31",
+      "totalHoldings": 3742,
+      "holdings": [
+        { "ticker": "AAPL", "name": "Apple Inc.", "weight": 0.0612 },
+        { "ticker": "MSFT", "name": "Microsoft Corp.", "weight": 0.0571 },
+        { "ticker": "NVDA", "name": "NVIDIA Corp.", "weight": 0.0498 },
+        { "ticker": "AMZN", "name": "Amazon.com Inc.", "weight": 0.0344 },
+        { "ticker": "META", "name": "Meta Platforms Inc.", "weight": 0.0234 },
+        { "ticker": "GOOGL", "name": "Alphabet Inc. Class A", "weight": 0.0192 },
+        { "ticker": "GOOG", "name": "Alphabet Inc. Class C", "weight": 0.0163 },
+        { "ticker": "BRK.B", "name": "Berkshire Hathaway Inc.", "weight": 0.0148 },
+        { "ticker": "TSLA", "name": "Tesla Inc.", "weight": 0.0131 },
+        { "ticker": "JPM", "name": "JPMorgan Chase & Co.", "weight": 0.0124 }
+      ]
+    },
+    "VOO": {
+      "fundTicker": "VOO",
+      "fundName": "Vanguard S&P 500 ETF",
+      "asOf": "2026-01-31",
+      "totalHoldings": 503,
+      "holdings": [
+        { "ticker": "AAPL", "name": "Apple Inc.", "weight": 0.0712 },
+        { "ticker": "MSFT", "name": "Microsoft Corp.", "weight": 0.0664 },
+        { "ticker": "NVDA", "name": "NVIDIA Corp.", "weight": 0.058 },
+        { "ticker": "AMZN", "name": "Amazon.com Inc.", "weight": 0.04 },
+        { "ticker": "META", "name": "Meta Platforms Inc.", "weight": 0.0272 },
+        { "ticker": "GOOGL", "name": "Alphabet Inc. Class A", "weight": 0.0224 },
+        { "ticker": "GOOG", "name": "Alphabet Inc. Class C", "weight": 0.019 },
+        { "ticker": "BRK.B", "name": "Berkshire Hathaway Inc.", "weight": 0.0173 },
+        { "ticker": "TSLA", "name": "Tesla Inc.", "weight": 0.0152 },
+        { "ticker": "JPM", "name": "JPMorgan Chase & Co.", "weight": 0.0145 }
+      ]
+    },
+    "BND": {
+      "fundTicker": "BND",
+      "fundName": "Vanguard Total Bond Market ETF",
+      "asOf": "2026-01-31",
+      "totalHoldings": 11000,
+      "holdings": [
+        { "ticker": "TREAS", "name": "U.S. Treasury Notes & Bonds", "weight": 0.464 },
+        { "ticker": "MBS", "name": "Mortgage-Backed Securities", "weight": 0.215 },
+        { "ticker": "CORP-IG", "name": "Investment-grade Corp Bonds", "weight": 0.171 },
+        { "ticker": "GOVT-AG", "name": "U.S. Government Agency", "weight": 0.06 },
+        { "ticker": "SOV", "name": "Foreign Sovereign", "weight": 0.038 },
+        { "ticker": "ABS", "name": "Asset-Backed Securities", "weight": 0.029 },
+        { "ticker": "MUNI", "name": "Municipal Bonds", "weight": 0.012 },
+        { "ticker": "OTHER", "name": "Other", "weight": 0.011 }
+      ]
+    },
+    "VXUS": {
+      "fundTicker": "VXUS",
+      "fundName": "Vanguard Total International Stock ETF",
+      "asOf": "2026-01-31",
+      "totalHoldings": 8612,
+      "holdings": [
+        { "ticker": "TSM", "name": "Taiwan Semiconductor Mfg.", "weight": 0.0214 },
+        { "ticker": "ASML", "name": "ASML Holding NV", "weight": 0.0148 },
+        { "ticker": "NESN.SW", "name": "Nestlé SA", "weight": 0.0117 },
+        { "ticker": "NVO", "name": "Novo Nordisk A/S", "weight": 0.0112 },
+        { "ticker": "TM", "name": "Toyota Motor Corp.", "weight": 0.0098 },
+        { "ticker": "SHEL", "name": "Shell plc", "weight": 0.0086 },
+        { "ticker": "AZN", "name": "AstraZeneca plc", "weight": 0.0084 },
+        { "ticker": "SAP", "name": "SAP SE", "weight": 0.0079 },
+        { "ticker": "RHHBY", "name": "Roche Holding AG", "weight": 0.0076 },
+        { "ticker": "HSBC", "name": "HSBC Holdings plc", "weight": 0.0072 }
+      ]
+    }
+  }
+}

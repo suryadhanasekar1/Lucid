@@ -1,0 +1,68 @@
+{
+  "source": "sample",
+  "fetchedAt": "2026-05-01T00:00:00Z",
+  "holdings": [
+    {
+      "ticker": "VTSAX",
+      "name": "Vanguard Total Stock Market Index Admiral",
+      "type": "mutual_fund",
+      "shares": 42.318,
+      "price": 124.65,
+      "costBasis": 4800,
+      "value": 5275.93
+    },
+    {
+      "ticker": "VTIAX",
+      "name": "Vanguard Total International Stock Index Admiral",
+      "type": "mutual_fund",
+      "shares": 35.4,
+      "price": 32.18,
+      "costBasis": 1100,
+      "value": 1139.17
+    },
+    {
+      "ticker": "VBTLX",
+      "name": "Vanguard Total Bond Market Index Admiral",
+      "type": "mutual_fund",
+      "shares": 95.2,
+      "price": 9.78,
+      "costBasis": 935,
+      "value": 930.86
+    },
+    {
+      "ticker": "AAPL",
+      "name": "Apple Inc.",
+      "type": "stock",
+      "shares": 12,
+      "price": 188.4,
+      "costBasis": 1900,
+      "value": 2260.8
+    },
+    {
+      "ticker": "MSFT",
+      "name": "Microsoft Corporation",
+      "type": "stock",
+      "shares": 6,
+      "price": 412.5,
+      "costBasis": 2300,
+      "value": 2475.0
+    },
+    {
+      "ticker": "VTI",
+      "name": "Vanguard Total Stock Market ETF",
+      "type": "etf",
+      "shares": 5,
+      "price": 245.18,
+      "costBasis": 1180,
+      "value": 1225.9
+    },
+    {
+      "ticker": "CASH",
+      "name": "Cash & Sweep",
+      "type": "cash",
+      "shares": 1,
+      "price": 1812.0,
+      "value": 1812.0
+    }
+  ]
+}

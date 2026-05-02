@@ -1,0 +1,192 @@
+@import "react-grid-layout/css/styles.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Surfaces — layered black */
+  --bg-base: #0A0A0B;
+  --bg-elevated: #121215;
+  --bg-elevated-2: #1A1A1F;
+  --bg-inset: #050506;
+
+  /* Gold — used sparingly */
+  --gold-primary: #C9A961;
+  --gold-bright: #D4AF37;
+  --gold-muted: #8A7548;
+  --gold-glow: rgba(201, 169, 97, 0.15);
+
+  /* Text — warm off-whites */
+  --text-primary: #F5F5F0;
+  --text-secondary: #A8A8A2;
+  --text-tertiary: #6B6B66;
+  --text-disabled: #3D3D3A;
+
+  /* Semantic — muted, not loud */
+  --signal-positive: #7FB069;
+  --signal-negative: #C76B5A;
+  --signal-warning: #E8B547;
+  --signal-info: #6B8FB5;
+
+  /* Borders */
+  --border-subtle: rgba(245, 245, 240, 0.06);
+  --border-default: rgba(245, 245, 240, 0.12);
+  --border-emphasis: rgba(201, 169, 97, 0.4);
+
+  /* Shadows */
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.2);
+  --shadow-elevated: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --shadow-glow-gold: 0 0 24px rgba(201, 169, 97, 0.25);
+
+  /* Spacing — 8pt grid */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Typography stacks (font *families* are wired by next/font in layout.tsx) */
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-body: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "JetBrains Mono", monospace;
+}
+
+html,
+body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--gold-glow);
+  color: var(--text-primary);
+}
+
+/* ───────────────────── Accessibility primitives ───────────────────── */
+
+/* Visible keyboard focus ring on every interactive element. Mouse focus
+ * stays clean via :focus-visible. */
+:focus-visible {
+  outline: 2px solid var(--gold-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Skip link — only visible when focused. */
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  padding: 8px 14px;
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border: 1px solid var(--gold-primary);
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transform: translateY(-200%);
+  transition: transform 0.18s ease;
+  z-index: 200;
+}
+.skip-link:focus,
+.skip-link:focus-visible {
+  transform: translateY(0);
+}
+
+/* Honor user preference for reduced motion globally. Components that animate
+ * still read prefers-reduced-motion via the React hook for fine-grained
+ * control; this is the safety net for everything else. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Skeleton shimmer keyframes (component reads var name in inline style). */
+@keyframes compass-skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Mobile reflow — keep page padding readable on phones. The dashboard grid
+ * itself is collapsed via the matchMedia hook in DashboardGrid. */
+@media (max-width: 767px) {
+  main {
+    padding: var(--space-6) var(--space-4) !important;
+  }
+  h1 {
+    font-size: 28px !important;
+    line-height: 1.15 !important;
+  }
+}
+
+/* react-grid-layout overrides — keep the drag preview minimal. */
+.compass-grid .react-grid-item.react-grid-placeholder {
+  background: rgba(201, 169, 97, 0.08) !important;
+  border: 1px dashed var(--gold-primary) !important;
+  border-radius: 14px !important;
+  opacity: 1 !important;
+  box-shadow: none !important;
+  transition: transform 120ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+.compass-grid .react-grid-item.react-draggable-dragging,
+.compass-grid .react-grid-item.resizing {
+  z-index: 10;
+  cursor: grabbing;
+}
+.compass-grid .react-grid-item.react-draggable-dragging > div > article {
+  border-color: var(--border-default) !important;
+}
+/* Resize handle — replace the default raster image with a quiet glyph. */
+.compass-grid .react-resizable-handle {
+  background-image: none !important;
+  width: 14px !important;
+  height: 14px !important;
+  bottom: 6px !important;
+  right: 6px !important;
+  opacity: 0.35;
+  transition: opacity 120ms ease;
+}
+.compass-grid .react-resizable-handle::after {
+  content: "";
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  width: 8px;
+  height: 8px;
+  border-right: 1.5px solid var(--text-tertiary);
+  border-bottom: 1.5px solid var(--text-tertiary);
+}
+.compass-grid .react-grid-item:hover .react-resizable-handle {
+  opacity: 1;
+}
+
+/* Visually hidden — content available to screen readers, not rendered. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

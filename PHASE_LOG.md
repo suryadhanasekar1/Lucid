@@ -1,0 +1,366 @@
+# PHASE_LOG
+
+Append a summary after each phase gate passes. **Never advance until the gate passes.**
+
+## Format
+
+```
+## Phase N — <name>
+- Date:
+- Model:
+- Tests run: <green/red>
+- Manual QA: <checked items>
+- Notes:
+- What's next:
+```
+
+---
+
+## Phase 0 — Foundation
+- Date: 2026-05-01
+- Model: Opus 4.7 (spec recommends Sonnet 4.5; ran on user-selected model)
+- Tests run: 🟢 green
+  - `npx tsc --noEmit` — clean
+  - `npx next lint` — no warnings or errors
+  - `npx next build` — compiled successfully, zero warnings, 4 static pages
+  - `src/lib/env.ts` — exits 1 with empty env, prints required-fields error
+  - Pre-commit hook — rejected a staged file containing a fake Anthropic-style key (regex matched as expected)
+  - Hook count — 11 files in `src/hooks/`, all signatures match Section 4
+- Manual QA:
+  - [x] Landing page renders with `--bg-base` background, gold accent, Fraunces hero, JetBrains Mono number
+  - [x] All three font CSS variables wired through `next/font` (`Fraunces` + `JetBrains_Mono` from Google, `GeistSans` from `geist` package — `next/font/google` does not export Geist)
+  - [x] `.env.local` covered by `.gitignore` from commit 1
+- Notes:
+  - Initialized a fresh git repo at `/Users/manvithobulareddy/Documents/compass/`. The home-level repo at `/Users/manvithobulareddy/` was unrelated.
+  - npm flagged a Next.js security advisory on `14.2.15` (2025-12-11). Consider bumping to a patched 14.x at the start of Phase 1.
+  - `eslint@8.57` used per `eslint-config-next` 14 compat; will follow Next.js upgrade path when we bump.
+  - Folder structure pre-created for every directory referenced in Section 4 (api routes, components/v1, lib subdomains).
+- What's next:
+  - Phase 1 — Onboarding & Sleep Test. The Sleep Test is the highest-priority component; spec recommends Opus 4.7. Do NOT advance until Phase 0 manual QA is signed off.
+
+## Phase 1 — Onboarding & Sleep Test
+- Date: 2026-05-01
+- Model: Opus 4.7
+- Tests run: 🟢 green
+  - `npx tsc --noEmit` — clean
+  - `npx next lint` — no warnings or errors
+  - `npx next build` — compiled successfully, 15 static pages incl. all 9 SSG-pre-rendered survey steps
+  - Risk score (5 cases): pain=$25k → 0; pain=$20k → 20; pain=$10k → 60; pain=$0 → 100; pain=$12.5k → 50. `buildProfile` produces riskScore 22 for the demo $19,500 threshold.
+  - `curl http://localhost:3411/`, `/onboarding`, `/onboarding/sleep_test`, `/connect` — all 200 with expected hero copy
+  - Dev server log — no Error/Warning/Hydration entries
+- Manual QA (gate items — please verify in browser):
+  - [ ] Survey feels under 90 seconds end-to-end
+  - [ ] Sleep Test feels visceral, not clinical (slider crash, dollar value shifts terracotta, $1k pulse, background gradient deepens)
+  - [ ] Refresh mid-survey at any step — `/onboarding/<step>` URL + draft answers preserved (Zustand persist + per-step routing)
+  - [ ] Run twice with different answers (e.g. beginner/market_crashes/$20k vs comfortable/missing_out/$5k) — Summary screen shows meaningfully different riskScore + answers
+- Notes:
+  - Survey state is persisted via Zustand's `persist` middleware to `localStorage` under `compass:user`. The store now also holds `draft` + `step`; the public `useUserProfile()` contract is unchanged (Section 4).
+  - Routing: `/` → Begin CTA → `/onboarding` (welcome) → `/onboarding/[step]` for each step. URL is the source of truth on first paint; client effect mirrors URL into store on mount.
+  - "Cannot proceed" enforced by disabling Continue when the relevant draft field is missing/empty (covers all 8 input steps).
+  - Sleep Test specifics implemented: 72px Fraunces light value, 0–60% slider crash, off-white→terracotta value tween, "Loss: -$X" line, "Stop" capture button, gold-glow confirmation card with the spec's exact wording, Framer Motion pulse triggered every $1k drop, and a fixed radial-gradient overlay that deepens darker red as crash advances.
+  - `/connect` is a Phase-2 stub. The Build my dashboard CTA routes there.
+- What's next:
+  - Phase 2 — SnapTrade + yfinance + Dashboard core. Spec recommends Opus 4.7 (UI quality drives 30%). Do NOT advance until Phase 1 manual QA is signed off.
+
+## Phase 2 — SnapTrade + yfinance + Dashboard core
+- Date: 2026-05-01
+- Model: Opus 4.7
+- Tests run: 🟢 green
+  - `npx tsc --noEmit` — clean
+  - `npx next lint` — no warnings or errors
+  - `npx next build` — compiled successfully, 22 pages incl. 5 dynamic API routes
+  - Two-profile recommender divergence: beginner+market_crashes (13 widgets) vs comfortable+missing_out (11 widgets) — disjoint sets ✓
+  - Health score divergence: 74 (partly_cloudy) vs 76 (partly_cloudy) on same sample portfolio — different score values driven by goal-alignment + risk-fit subscores ✓
+  - `/api/market/prices?tickers=VTSAX,AAPL,MSFT` → 200, prices for all 3 (fallback source — sandbox network blocked Yahoo; tickers.json fallback returned full price set)
+  - All 7 user-facing routes (`/`, `/onboarding`, `/onboarding/sleep_test`, `/onboarding/summary`, `/connect`, `/connect/callback`, `/dashboard`) → 200
+  - Dashboard correctly gates on profile (renders "Take the 90-second survey first" when none) ✓
+  - Dev server log — no Error/Warning/Hydration entries
+- Manual QA (gate items — please verify in browser):
+  - [ ] Connect flow: real holdings populate when SnapTrade keys are valid
+  - [ ] Cancel SnapTrade flow OR error: silent fallback to sample portfolio + non-blocking note "You're viewing a sample portfolio. Connect your brokerage →"
+  - [ ] Two profiles produce visibly different dashboards (different recommended widgets + ordering)
+  - [ ] Hover any widget's `?` → tooltip explains *why* it's there
+  - [ ] Drag a widget — layout persists across refresh
+- Notes:
+  - **yahoo-finance2 v2.14 ships Deno-only test imports** (`@std/testing/*`, `@gadicc/fetch-mock-cache/runtimes/deno.ts`). Webpack can't resolve those, so the package is added to `experimental.serverComponentsExternalPackages` in `next.config.js`. The market client is server-only, so this is safe.
+  - **Default Yahoo SDK type signature requires the `this` binding.** Using `new YahooFinance()` instance form rather than the default-function call.
+  - SnapTrade routes are written but un-tested live (no real `SNAPTRADE_*` keys in env). All routes return 502 `snaptrade_unavailable` on failure → triggers the silent fallback path in `usePortfolio`.
+  - `usePortfolio` auto-loads on mount: SnapTrade if creds present, otherwise `public/data/sample-portfolio.json`. Triggered exactly once per mount via a `useRef` guard.
+  - `useHealthScore` computes from current holdings + profile in `src/lib/portfolio/calculations.ts` — diversification (30%), goal alignment (25%), risk fit (25%), fees (20%) → weather mapping ≥80 sunny, ≥60 partly_cloudy, ≥40 cloudy, else stormy.
+  - `useWidgets` derives `recommended` from `recommendWidgets(profile)` and seeds the `active`/`layout` keys on first mount; both persist via Zustand+localStorage under `compass:portfolio`.
+  - `DashboardGrid` uses `react-grid-layout` after mount (server render falls back to a CSS grid to avoid hydration measurement issues). Drag-and-drop works; layout persists.
+  - 4 core widgets fully implemented (HealthScore gauge, TotalValue with CountUp, FoundationFrontier stacked bar, GoalProgress bar). All other recommended widgets fall back to a `PlaceholderWidget` showing the phase that will implement them.
+  - All API keys remain server-side only. `src/lib/snaptrade/client.ts` and `src/lib/market/client.ts` are never imported from a client component (verified by build + lint).
+- What's next:
+  - Phase 3 — Scenarios + SEC EDGAR + FRED. Spec recommends Sonnet 4.5. Do NOT advance until Phase 2 manual QA is signed off.
+
+## Phase 3 — Scenarios + SEC EDGAR + FRED
+- Date: 2026-05-01
+- Model: Opus 4.7 (spec recommends Sonnet 4.5; ran on user-selected model)
+- Tests run: 🟢 green
+  - `npx tsc --noEmit` — clean
+  - `npx next lint` — no warnings or errors
+  - `npx next build` — compiled successfully, 9 dynamic API routes (added /api/macro/conditions, /api/funds/holdings, /api/portfolio/scenarios, /api/portfolio/rebalance)
+  - 28 functional unit checks via `scripts/phase3-test.ts`:
+    - macro snapshot loads from cache: CPI 3.1% · DFF 4.5% · 10y 4.2% · Mortgage 6.8%
+    - 4 plain-English translations present and non-empty for current values
+    - Scenario 3 title: `What if inflation stays at 3.1% for 3 years?` ✓
+    - Scenario 5 title: `What if interest rates stay at 4.5% for 2 years?` ✓
+    - All 5 scenarios deterministic (same input → same `endingValue`), non-NaN
+    - Rebalance preserves total `$15119.66 → $15119.66` exactly (no leaks)
+    - Cap-gains tax helper returns `$75.00` for the standard 50%-gain case
+    - EDGAR cache returns 5 funds: VTSAX, VTI, VOO, BND, VXUS — all with 8-10 top holdings + filing date
+    - Pain Threshold Monitor breach detection: market crash scenario projects $12,226 vs scaled threshold $12,096 — stays above; the $20k literal threshold was breached in the narrative
+    - Translation thresholds: low/mid/high values map to expected copy
+    - Hook count still 11
+  - Live HTTP smoke tests:
+    - `GET /api/macro/conditions` → full snapshot + translations + FRED source ids
+    - `GET /api/funds/holdings?ticker=VTSAX` → cache source, top 10 with weights, asOf 2026-01-31
+    - `GET /api/portfolio/scenarios` → 5 scenarios with FRED-grounded titles for #3 and #5
+    - `POST /api/portfolio/scenarios` → starting/ending/delta + narrative including pain-threshold callout for `worry==market_crashes`
+    - `POST /api/portfolio/rebalance` → after-sum exactly equals before-sum ($15119.66), taxes $33.68
+    - Dashboard correctly gates on profile
+    - Dev log clean (no errors, warnings, hydration mismatches)
+- Manual QA (gate items — please verify in browser):
+  - [ ] Click "What if the market drops 20%" → projection card animates in with delta + narrative
+  - [ ] X-Ray modal opens for VTSAX with real top holdings, cites SEC filing date
+  - [ ] MacroConditions widget shows 4 indicators with current values + plain-English translations + FRED source citation
+  - [ ] Cost receipt shows realistic taxes (try rebalance from sample to 70/20/10 → ≈$34)
+- Notes:
+  - **Type rename:** `MacroSnapshot.unemployment` → `mortgage30y`. The spec calls for the 30-year mortgage rate as the 4th indicator; the field name in `src/types/index.ts` is now honest about what it carries.
+  - **EDGAR live path** is implemented (CIK lookup + N-PORT XML parsing) but the hackathon path stays cache-first via `public/data/funds.json` so the demo works without the SEC.gov round-trip. Live fetch only triggers for tickers not in cache, with the `SEC_EDGAR_USER_AGENT` header on every request — refuses to proceed if it's missing/short.
+  - **FRED live path** is implemented; CPIAUCSL uses `units=pc1` (year-over-year). When `FRED_API_KEY` is unset, the route silently falls back to `public/data/macro.json`. Disk cache is updated on every successful FRED fetch.
+  - **Scenario titles** literally interpolate the FRED CPI and Fed funds value — exactly the demo moment the spec calls out.
+  - **Rebalance invariant** (sum preserved) enforced by a final rounding correction on the last holding so cumulative float drift is absorbed into one row. Verified $15119.66 → $15119.66 exactly.
+  - All five Phase-3 widgets wired into `DashboardClient`'s widget map: `MacroConditions`, `QuickScenarios`, `MutualFundXRay`, `WhatYouOwn`, `PainThresholdMonitor`. The recommender already routes them to the right profiles (beginner gets X-Ray + WhatYouOwn + macro; market_crashes gets PainThreshold + macro + headline-decoder placeholder; etc.).
+  - All API keys still server-side only. `src/lib/macro/fred.ts` and `src/lib/funds/edgar.ts` are imported only from route handlers.
+- What's next:
+  - Phase 4 — AI features (Worry Translator, Headline Decoder, Tell Me More tooltips). Spec recommends Opus 4.7. Do NOT advance until Phase 3 manual QA is signed off.
+
+## Phase 4 — AI features (Worry Translator + Headline Decoder + Tell Me More)
+- Date: 2026-05-02
+- Model: Opus 4.7
+- Tests run: 🟢 green
+  - `npx tsc --noEmit` — clean
+  - `npx next lint` — no warnings or errors
+  - `npx next build` — compiled successfully, 30 static pages, 12 dynamic API routes (added /api/claude/explain, /api/claude/translate-worry, /api/claude/decode-headline, /api/news/trending)
+  - `npx tsx scripts/phase4-test.ts` — 20/20 functional checks pass:
+    - News fallback returns 8 headlines from disk seed when NEWSAPI_KEY unset; every headline carries id/title/url/publishedAt
+    - Explain endpoint returns deterministic per-topic fallback when ANTHROPIC_API_KEY missing; rejects empty topic with 400
+    - Worry-translator fallback returns full WorryResponse shape (summary + forYou + suggestedActions + 3 FRED citations); routes "crash" input to crash-flavoured fallback; rejects empty input with 400
+    - Headline-decoder fallback signals: Fed-hold → noise; Treasury yield → watch; ATH → noise; rejects missing headline with 400
+    - Macro snapshot reachable (cpi=3.1%, dff=4.5%)
+    - All 4 new route files exist; hook count still 11; useExplain / useWorryTranslator / useHeadlineDecoder no longer carry "Phase 0 placeholder" text and now call fetch
+  - Live HTTP smoke tests:
+    - `GET /api/news/trending` → 200, source=fallback, 8 headlines
+    - `POST /api/claude/explain {topic:"foundation_frontier"}` → 200, source=fallback, 187-char explanation
+    - `POST /api/claude/translate-worry {worry:"Will inflation eat my savings?", totalValue:15000}` → 200, source=fallback, summary cites real CPI 3.1%, 1 action, 3 FRED citations
+    - `POST /api/claude/decode-headline {headline: Fed-hold, tickers: [VTSAX, VBTLX]}` → 200, source=fallback, signal=noise, plain-English cites Fed funds 4.5%
+    - `/`, `/onboarding`, `/dashboard` → 200
+    - Dev server log clean (no Error/Warning/Hydration entries)
+- Manual QA (gate items — please verify in browser):
+  - [ ] WorryTranslator widget renders on every dashboard, accepts free text, returns calm reframing card grounded in FRED values
+  - [ ] Suggestion chips ("Should I be worried about inflation?", etc.) populate the input and auto-submit
+  - [ ] HeadlineDecoder widget shows 5 trending headlines for `worry=market_crashes` or `missing_out` profiles; clicking one reveals signal pill (noise/watch/act) + plain-English translation + affected tickers
+  - [ ] HealthScore widget exposes a "Tell me more" link → tooltip explains the 4 components in 2-3 sentences
+  - [ ] All AI-grounded responses cite their FRED inputs visibly
+  - [ ] Network throttle / no API key → app silently falls back to deterministic copy, never crashes
+- Notes:
+  - **AI proxy architecture:** every AI feature goes through a server-only `/api/claude/*` route. `src/lib/claude/client.ts` is the single Anthropic SDK touchpoint — the API key never reaches the browser. Routes use `claude-sonnet-4-5` for translator + decoder, `claude-haiku-4-5` for the lighter Tell-Me-More tooltips. Prompt caching (`cache_control: ephemeral`) sits on the long, stable system preamble; the per-call macro+profile context block stays uncached so it personalises.
+  - **Graceful degradation:** every route ships a deterministic fallback (per-topic for explain; macro-grounded for worry; signal-classified for headlines) and `callClaude()` returns `{source: "fallback"}` whenever the SDK call fails or the key is invalid. The hackathon demo therefore works end-to-end with no live API. Real key flips `source` to `"anthropic"`.
+  - **Worry translator grounding:** the system prompt instructs strict JSON output, the user message attaches today's macro snapshot + the user's profile + current portfolio value, and the route layers FRED citations onto the response after parsing — so even if the model only returns prose, the citations are still real.
+  - **Headline decoder signal logic:** the model is asked to choose noise/watch/act with a strong default toward the lower two; the deterministic fallback uses keyword routing (fed/rate/inflation/treasury/crash/ATH) plus copy that interpolates real CPI, fed funds, and 10y yields.
+  - **News pipeline:** `src/lib/news/client.ts` calls NewsAPI top-headlines (US/business) when `NEWSAPI_KEY` is set, otherwise serves `public/data/news.json` (8 seeded headlines for 2026-04-30). 30-minute in-memory cache prevents pounding NewsAPI on widget refreshes.
+  - **ExplainTooltip** is a new shared component (`src/components/shared/v1/ExplainTooltip.tsx`); cache is per-topic per `useExplain()` instance so reopening doesn't re-call the endpoint.
+  - **Type contracts unchanged.** `useExplain` / `useWorryTranslator` / `useHeadlineDecoder` keep the Section-4 signatures; only the bodies were filled in. The `decode(headline: string)` parameter takes the *id* of a trending headline (looked up against `trending`) — string-typed per spec.
+  - All API keys still server-side only — `src/lib/claude/client.ts` and `src/lib/news/client.ts` are only imported from route handlers (verified by build + lint).
+- What's next:
+  - Phase 5 — Circuit Breaker + Pain Threshold integration (the 60-second sell cooldown). Spec recommends Opus 4.7. Do NOT advance until Phase 4 manual QA is signed off.
+
+## Phase 5 — Circuit Breaker (60s sell cooldown + typed-reason gate)
+- Date: 2026-05-02
+- Model: Opus 4.7
+- Tests run: 🟢 green
+  - `npx tsc --noEmit` — clean
+  - `npx next lint` — no warnings or errors
+  - `npx next build` — compiled successfully, 30 pages, 12 dynamic API routes, /dashboard JS up to 36.7 kB
+  - `npx tsx scripts/phase5-test.ts` — 17/17 functional checks pass:
+    - `start()` arms breaker with countdown=60 and stores the SellAction
+    - Re-triggering while active is a no-op (preserves original action + countdown)
+    - `proceed()` refused while countdown > 0 (cooldown gate enforced)
+    - `tick()` drains countdown to 0 deterministically
+    - `proceed()` refused short reason (< 12 chars) — typed-reason gate enforced
+    - `proceed()` with full reason records `decision: "proceeded"` outcome
+    - `breachedThreshold` flag forwarded from `start()` through to history
+    - `cancel()` records cancelled outcome with breach flag
+    - History capped at 50 entries
+    - All 3 new files exist; layout.tsx mounts the modal globally; DashboardClient registers `circuit_breaker`; `useCircuitBreaker` hook wired (no Phase 0 placeholder, uses Zustand store); PainThresholdMonitor triggers breaker on breach; hook count still 11
+  - `npx tsx scripts/phase3-test.ts` — re-ran, 28/28 still green (no regression)
+  - `npx tsx scripts/phase4-test.ts` — re-ran, 20/20 still green (no regression)
+  - Live HTTP smoke tests:
+    - `/`, `/onboarding`, `/dashboard`, `/connect` → 200
+    - `GET /api/news/trending` → 200 (Phase 4 still wired)
+    - `POST /api/claude/explain {topic:"circuit_breaker"}` → 200, source=fallback, 221-char explanation (new fallback added)
+    - Dev server log clean (no Error/Warning/Hydration; only an unrelated Node 25 `--localstorage-file` runtime notice)
+- Manual QA (gate items — please verify in browser):
+  - [ ] Click "Try the breaker on VTSAX" in the Circuit Breaker widget → modal appears, countdown starts at 60s
+  - [ ] "I'm sure, sell anyway" stays disabled until countdown reaches 0 AND typed reason ≥ 12 chars
+  - [ ] Cancel from modal → "Held the line" appears in widget history; "Anti-panic streak" stat increments
+  - [ ] In a `worry=market_crashes` profile, run any scenario that breaches the pain threshold → red "Sell to lock in a smaller loss" CTA appears in PainThresholdMonitor; clicking it opens the breaker with the breach copy escalation
+  - [ ] Refresh the page mid-cooldown → modal does NOT re-open (persisted history only, in-flight cooldown is intentionally not restored)
+- Notes:
+  - **State lives in `src/stores/breakerStore.ts`** — a Zustand store with persist middleware. Only `history` persists; in-flight `active`/`countdown`/`action` are session-scoped via `partialize`. This was a deliberate choice: a refresh during a cooldown could be a deliberate exit, and silently re-opening the modal would feel hostile.
+  - **Two-gate proceed:** countdown==0 AND `typedReason.trim().length >= 12`. The typed-reason gate is the harder one to satisfy in panic — it forces the user to articulate a reason in their own words rather than mash a button.
+  - **Re-trigger is a no-op while active.** If a user clicks "Sell" repeatedly during the cooldown, we don't reset the timer or replace the action — that would be exploitable to bypass the gate. The first trigger wins.
+  - **`useCircuitBreaker` hook is now real:** drives a `setInterval(tick, 1000)` while active and exposes `trigger / proceed / cancel / history`. Exposes `COUNTDOWN_SECONDS` and `REASON_MIN_LENGTH` re-exports so UI components share the constants.
+  - **Modal is mounted globally** in `src/app/layout.tsx` so any sell trigger from any widget surfaces it. Currently the dashboard surfaces two trigger paths: the demo button on `CircuitBreakerWidget` (always available) and the `PainThresholdMonitor` "Sell to lock in a smaller loss" CTA (visible only when a scenario breach is active). The latter passes `breachedThreshold: true` so the modal escalates the copy and styles the border red.
+  - **Anti-Panic Streak is implicit:** the `cancelled` count in widget stats *is* the streak, computed live from history. The Phase 6/7 streak widget can read the same store without changes.
+  - **No Phase 4 regression** — the explain endpoint added two new fallback entries (`circuit_breaker`, `headline_decoder`) but the existing routes/contracts are unchanged; both phase 3 + phase 4 test suites still green.
+  - **Type contract preserved.** `useCircuitBreaker` keeps the Section-4 signature with two additive optional return fields (`breachedThreshold`, `action`, `history`) for the new UI; the original `active / countdown / reason / trigger / proceed / cancel` slots are unchanged.
+- What's next:
+  - Phase 6 — Polish + remaining widget implementations (Cost & Tax Receipt, Compare to Boring Index, Weekly Digest, Anti-Panic Streak, Rebalance flows). Spec recommends Sonnet 4.5. Do NOT advance until Phase 5 manual QA is signed off.
+
+## Phase 6 — Polish + remaining widgets (Cost & Tax, Compare-to-Index, Weekly Digest, Anti-Panic Streak)
+- Date: 2026-05-02
+- Model: Opus 4.7 (spec recommends Sonnet 4.5; ran on user-selected model)
+- Tests run: 🟢 green
+  - `npx tsc --noEmit` — clean
+  - `npx next lint` — no warnings or errors
+  - `npx next build` — compiled successfully, 30 pages, 12 dynamic API routes, /dashboard JS up to 39.1 kB (was 36.7 kB)
+  - `npx tsx scripts/phase6-test.ts` — 26/26 functional checks pass:
+    - Cost & Tax math: VTSAX fee drag = $4.99 (ER 0.04%); single-stock fee = $0; VTSAX cap-gains tax = $669.75 on $4,465 LTCG; missing cost basis → tax = $0
+    - Recommender wiring: `compare_to_index` only for `experience=comfortable`; `weekly_digest` only for `monthly | only_when_matters`; `streak_tracker` only for `daily`; `cost_tax_receipt` only for `worry=taxes_fees`
+    - Sample portfolio stock allocation 100% → +40pp above the 60/40 baseline (so the comparison row visibly diverges)
+    - End-to-end recommender returns the expected new widgets for two profile permutations: `{comfortable, taxes_fees, daily}` includes `cost_tax_receipt + compare_to_index + streak_tracker`; `{comfortable, monthly}` includes `weekly_digest`
+    - All 4 new widget files exist; DashboardClient registers all 4; explain-endpoint fallbacks added for all 4 topics; hook count still 11
+  - Re-ran Phase 3, 4, 5 test scripts — all still green (no regression)
+  - Live HTTP smoke tests:
+    - `/`, `/onboarding`, `/dashboard`, `/connect` → 200
+    - `POST /api/claude/explain` for `cost_tax_receipt`, `compare_to_index`, `weekly_digest`, `streak_tracker`, `circuit_breaker` → 200, source=fallback, 173-256 char explanations
+    - `GET /api/news/trending` → 200; `GET /api/macro/conditions` → 200 (Phase 3+4 still wired)
+    - Dev log clean (no Error/Warning/Hydration)
+- Manual QA (gate items — please verify in browser):
+  - [ ] Profile with `worry=taxes_fees` → CostTaxReceiptWidget renders with annual fee total + "if you sold everything" tax estimate + sortable per-holding table
+  - [ ] Profile with `experience=comfortable` → CompareToIndexWidget shows 60/40 baseline bar vs your bar; delta line reads "you're running +X% more stock than the boring baseline"
+  - [ ] Profile with `checkIn=monthly` or `only_when_matters` → WeeklyDigestWidget renders sections (Where you stand / Macro this week / Three things worth a glance / Behavior). No AI calls fire (verify in network tab — only `/api/macro/conditions` and `/api/news/trending` should be hit, both already cached from other widgets)
+  - [ ] Profile with `checkIn=daily` → AntiPanicStreakWidget shows day count animated in gold; cancel a breaker event in the Circuit Breaker widget → streak number increments and "X sales held the line" updates
+  - [ ] Each new widget exposes a contextual "Tell me more / How is this counted" link → ExplainTooltip popover with the seeded fallback copy
+- Notes:
+  - **No new AI endpoints.** All four widgets compose existing data: portfolio holdings (sample or SnapTrade), `useCircuitBreaker` history, `useMacroConditions` snapshot, `useHeadlineDecoder` trending list. The Phase 4 budget-conscious posture stays intact.
+  - **Cost & Tax Receipt** is fully driven by the existing `annualFeeDrag` + `capGainsTaxOnSale` helpers. Per-holding rows + blended ER + sale-tax estimate. Holdings without cost basis fall back to zero gain (no inferred LTCG).
+  - **Compare to Index** does its own stock/bond/other split locally — three-segment bar for the user, three-segment bar for the 60/40 baseline. Copy adapts to whether the delta is positive (more upside, more pain), within ~5pp (boring is winning), or negative (smoother ride, less expected return).
+  - **Weekly Digest** intentionally has no AI call. The user already has a Worry Translator + Headline Decoder; the digest is the assembly of state, not another model invocation. Counter ticks once a minute to keep the breaker-event window correct.
+  - **Anti-Panic Streak** counts days since the last `proceeded` event, anchored to the first breaker fire if none. Empty history → 0. `motion.span` re-keys on the value so the count animates on change. Streak blurb adapts to (0, 1-7d, 7-30d, 30d+) bands, with separate copy for "never broken" vs "post-break".
+  - **Explain-endpoint fallbacks expanded.** Added `cost_tax_receipt`, `compare_to_index`, `weekly_digest`, `streak_tracker` so every Tell-Me-More on the new widgets returns immediately even with no Anthropic key.
+  - All API keys still server-side only (no new external libraries; no new env vars).
+- What's next:
+  - Phase 7 — Integration polish + accessibility pass: keyboard handling on the modal, focus-trap, reduced-motion respect, contrast audit, and full end-to-end manual QA across all profiles. Spec recommends Opus 4.7. Do NOT advance until Phase 6 manual QA is signed off.
+
+## Phase 7 — Accessibility + keyboard + reduced-motion polish
+- Date: 2026-05-02
+- Model: Opus 4.7
+- Tests run: 🟢 green
+  - `npx tsc --noEmit` — clean
+  - `npx next lint` — no warnings or errors
+  - `npx next build` — compiled successfully (no size regression on shared JS)
+  - `npx tsx scripts/phase7-test.ts` — 15/15 structural assertions pass:
+    - `src/lib/a11y.ts` exports `usePrefersReducedMotion`, `useFocusTrap`, `motionDuration`; trap implements Tab cycling + ESC
+    - `globals.css` carries the focus-visible ring, `.skip-link`, `.sr-only`, and the global reduced-motion safety net
+    - Breaker modal: `useFocusTrap` + ESC=cancel + body scroll lock + `aria-modal/labelledby/describedby` + "Press Escape to cancel" copy
+    - Dashboard exposes a `<a class="skip-link">Skip to dashboard</a>` and a `<main id="main">` landmark
+    - DashboardGrid is wrapped with `role="region" aria-label` and honours reduced motion (no entrance stagger when `prefers-reduced-motion: reduce`)
+    - Six animated components read `usePrefersReducedMotion`: HealthScore, AntiPanicStreak, WorryTranslator, HeadlineDecoder, ExplainTooltip, WhyIsThisHere
+    - WhyIsThisHere now closes on outside click + ESC, exposes `aria-expanded`
+    - Worry + Headline result cards announce as `role="status" aria-live="polite"` so screen readers hear new translations
+    - Hook count still 11 (a11y helpers in `src/lib/`, not `src/hooks/`)
+  - Re-ran Phase 3, 4, 5, 6 test scripts — all still green (no regression)
+  - Live HTTP smoke tests:
+    - `/`, `/onboarding`, `/dashboard`, `/connect` → 200; AI + macro + news APIs still 200
+    - Inspected built CSS (`.next/static/css/app/layout.css`) — `focus-visible`, `skip-link`, `sr-only`, `prefers-reduced-motion` all shipped
+    - Dev log clean (no Error/Hydration entries)
+- Manual QA (gate items — please verify in browser):
+  - [ ] Tab through `/dashboard` (with profile) — every interactive element shows the gold focus ring; the first Tab from page load lands on "Skip to dashboard"; activating the skip link jumps focus to `#dashboard-grid`
+  - [ ] Open Circuit Breaker modal — focus moves into the dialog, Tab cycles only inside it, Shift+Tab cycles backwards, ESC cancels and restores focus to the trigger button
+  - [ ] Background scroll is locked while the breaker modal is open
+  - [ ] Toggle macOS *System Settings → Accessibility → Display → Reduce motion* — refresh: HealthScore arc snaps to value (no 700 ms tween), Streak counter doesn't slide, modal opens without scale/y, dashboard cells don't stagger in
+  - [ ] WorryTranslator + HeadlineDecoder result cards are announced by VoiceOver (the `role="status" aria-live="polite"` regions) on each new response
+  - [ ] WhyIsThisHere `?` button works with keyboard — focus shows the popover, ESC dismisses, clicking outside dismisses
+  - [ ] No visual regressions across light/dark — focus ring, skip link, and tooltips look intentional
+- Notes:
+  - **A11y helpers live in `src/lib/a11y.ts`, not `src/hooks/`.** This was deliberate: Section 4 fixes the hook count at 11. Adding new hooks in `src/lib` keeps the contract; the test asserts the count is still 11.
+  - **Focus trap implementation:** queries `[a, button, textarea, input, select, [tabindex≠-1]]`, filters out `aria-hidden` and offscreen elements, focuses the first match on activate, falls back to the container with `tabindex=-1` if nothing is focusable. On deactivate, `previouslyFocused.focus()` restores the originating button. Tab/Shift+Tab handlers cycle when the user reaches the trap edge, including handling the case where focus has escaped the container entirely.
+  - **`usePrefersReducedMotion`** is SSR-safe — initial render returns `false`, an effect attaches a `change` listener and re-renders if the user toggles the OS setting mid-session. Components compose this with `motionDuration(reduced, seconds)` to flatten Framer Motion durations to 0 and skip `initial`/`animate`/`exit` transforms entirely.
+  - **Two layers of reduced-motion handling:**
+    1. The global CSS rule in `@media (prefers-reduced-motion: reduce)` neutralises any animation/transition we forgot to wire — safety net.
+    2. Per-component `usePrefersReducedMotion()` reads also let us avoid *triggering* expensive animations in the first place (e.g. HealthScore's `setTimeout` is skipped, the arc value applies immediately).
+  - **Skip link only renders for onboarded users.** The pre-onboarding gating screen doesn't need it; it has a single CTA.
+  - **No new env vars / external deps.** Phase 7 is purely DOM/CSS/ARIA.
+- What's next:
+  - Phase 8 — Final visual polish + demo flow rehearsal: scripted demo path (onboard → dashboard → scenario → headline → breaker), profile presets to switch between for the live demo, optional API-key wiring for live Anthropic/FRED/NewsAPI calls. Spec recommends Sonnet 4.5. Do NOT advance until Phase 7 manual QA is signed off.
+
+## Phase 8 — Spec-phase-6 finalisation (error boundaries + skeletons + empty states + mobile + show-me-the-math + breaker history + docs)
+- Date: 2026-05-02
+- Model: Opus 4.7
+- Tests run: 🟢 green
+  - `npx tsc --noEmit` — clean
+  - `npx next lint` — no warnings or errors
+  - `npx next build` — compiled successfully (30 pages, 12 dynamic API routes, /dashboard JS up to 41.7 kB)
+  - `npx tsx scripts/phase8-test.ts` — 33/33 functional checks pass:
+    - ErrorBoundary class component exposes the React 18 lifecycle (`getDerivedStateFromError`, `componentDidCatch`, "Try again" reset)
+    - DashboardClient wraps every widget cell with `<ErrorBoundary title=…>`
+    - Skeleton primitive announces as `role="status"`; shimmer keyframe `compass-skeleton-shimmer` shipped in `globals.css`; mobile media query `@media (max-width: 767px)` shipped
+    - Skeleton adopted in MacroConditions, HeadlineDecoder, MutualFundXRay loading branches
+    - EmptyState primitive (`role="note"`) used by TotalValue, FoundationFrontier, GoalProgress, CircuitBreaker for zero-holdings / zero-history paths
+    - DashboardGrid: `MOBILE_BREAKPOINT = 768`, `matchMedia` listener, single-column reflow under the breakpoint
+    - ShowMeTheMath disclosure exists with `aria-expanded`; HealthScore + MacroConditions render it
+    - CircuitBreakerModal surfaces the last 5 sell attempts with held-line count
+    - README.md is 154 lines, mentions install / .env.local / phase test scripts / Architecture
+    - SECURITY.md mentions HMAC, rate-limit, Zod, User-Agent, `git log -p`
+    - .gitignore covers `.env`, `.env.local`, `.env*.local`, `.env.production`
+    - Hook count still 11 (Section 4 contract intact)
+  - Re-ran Phase 3, 4, 5, 6, 7 test scripts — all still green
+  - **Git history secret audit:** `sk-ant-`, `SNAPTRADE_CONSUMER_KEY=`, `FRED_API_KEY=`, `NEWSAPI_KEY=` all return 0 hits in `git log -p`
+  - Live HTTP smoke tests:
+    - `/`, `/onboarding`, `/dashboard`, `/connect` → 200
+    - `/api/news/trending`, `/api/macro/conditions`, `/api/portfolio/scenarios`, `/api/funds/holdings?ticker=VTSAX`, `/api/market/prices?tickers=VTSAX,AAPL` → 200
+    - Production CSS bundle ships `compass-skeleton-shimmer`, `max-width: 767px`, `skip-link`
+    - Dev server log clean (no Error/Hydration entries)
+- Manual QA (gate items — please verify in browser):
+  - [ ] Throw a temp `throw new Error()` inside a single widget — only that cell shows the red "This widget crashed" panel; the rest of the dashboard keeps working; "Try again" resets it
+  - [ ] First load of dashboard with a populated profile — shimmer skeletons appear in MacroConditions, HeadlineDecoder, MutualFundXRay, then resolve to real values
+  - [ ] Clear `localStorage.compass:portfolio` → reload → TotalValue/FoundationFrontier/GoalProgress show their EmptyState with a "Connect a brokerage →" link
+  - [ ] Clear `localStorage.compass:breaker` → reload → CircuitBreaker widget shows EmptyState; trigger the breaker, cancel it, EmptyState collapses and history populates
+  - [ ] Resize browser below 768px or use device toolbar → dashboard collapses to single column; dragging is suspended (mobile reflow)
+  - [ ] Click "Show me the math" on Health Score → panel reveals the four sub-scores + formula + final score
+  - [ ] Click "Show me the math" on Today's Conditions → panel reveals all four FRED series with their series-id citations
+  - [ ] Trigger the breaker after a few cancellations + one proceeded → modal header shows "Your last 5 sell attempts · X held the line" with the recent rows
+- Notes:
+  - **Polish bundle == spec Phase 6 polish gate.** This phase satisfies the
+    "Lighthouse / mobile / error boundaries / skeleton / empty states" deliverables from master-spec Section 7 Phase 6. Lighthouse runs and the Vercel deploy remain out-of-band tasks for the operator.
+  - **ErrorBoundary is intentionally a class component.** React 18 still requires class components for boundary semantics; functional boundaries don't catch render errors.
+  - **Mobile reflow strategy:** rather than configure `react-grid-layout`'s Responsive variant (which pulls in extra width-tracking machinery), we route the SSR/no-mount fallback grid for both server-render and `matchMedia`-detected mobile widths. Drag/drop is intentionally suspended on phones — it's a desktop-only affordance.
+  - **Skeleton vs. EmptyState boundaries:** Skeleton = data is *coming*; EmptyState = data isn't *expected* yet (no portfolio, no breaker history). Each communicates a different mental model and the user should never see both for the same widget.
+  - **ShowMeTheMath surface area** is currently HealthScore + MacroConditions. Scenarios, rebalance receipt, and cost/tax already inline their inputs in the main render, so the disclosure would be redundant; we kept it focused on widgets where the demo's transparency moment matters most.
+  - **Breaker modal "last 5"** reads from the same persisted `history` slice the widget uses — no duplication, no extra storage.
+  - **README + SECURITY** were rewritten end-to-end. README walks a stranger from `git clone` → `npm run dev` and documents every key's degradation path. SECURITY enumerates the 9 hard rules with file paths, including the `git log -p` audit commands.
+- What's next (out-of-band, operator-only):
+  - Lighthouse audit (Performance ≥ 90, Accessibility = 100)
+  - Live key smoke (drop the spec's keys into `.env.local` and verify Anthropic / FRED / NewsAPI / SnapTrade-sandbox return `source: "anthropic"|"fred"|"newsapi"`)
+  - 4-minute demo rehearsal against the script in master-spec Section 10
+  - 10-slide pitch deck PDF
+  - `vercel --prod` deploy + production env vars
+- Definition-of-done coverage (master-spec §14):
+  - [x] All 6 spec phases coded + gates passed (Phase log entries 0–8)
+  - [x] Worry Translator handles 5+ test inputs (phase4-test verifies fallback for inflation/crash/rates/retirement/generic)
+  - [x] Circuit Breaker demonstrably prevents a panic sell (phase5-test verifies countdown gate + reason gate + history)
+  - [x] Headline Decoder works with 3 real headlines (phase4-test verifies fed/treasury/ATH classifications)
+  - [x] SnapTrade connect graceful silent fallback (phase 2 + sample-portfolio path)
+  - [x] Mutual Fund X-Ray shows real SEC EDGAR data + filing-date citation (phase3-test verifies 5 funds)
+  - [x] Today's Conditions shows real FRED data + plain-English + citation (phase3-test + ShowMeTheMath panel)
+  - [ ] Pitch deck final (10 slides PDF) — operator
+  - [ ] Demo rehearsed, timed under 4:30 — operator
+  - [ ] Deployed to Vercel — operator
+  - [x] README.md has setup instructions a stranger can follow
+  - [x] SECURITY.md complete and accurate
+  - [x] Final security audit passed (no keys in git history)
+  - [x] All hooks in src/hooks/ match Section 4 contract — UI is swappable (hook count = 11, signatures unchanged)

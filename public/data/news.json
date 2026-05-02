@@ -1,0 +1,61 @@
+{
+  "fetchedAt": "2026-04-30T12:00:00Z",
+  "headlines": [
+    {
+      "id": "fed-pause-april",
+      "title": "Fed Holds Rates Steady, Citing Sticky Services Inflation",
+      "source": "Reuters",
+      "url": "https://www.reuters.com/markets/us/fed-holds-rates",
+      "publishedAt": "2026-04-30T18:01:00Z"
+    },
+    {
+      "id": "treasury-10y-pop",
+      "title": "10-Year Treasury Yield Tops 4.2% After Stronger-Than-Expected Jobs Report",
+      "source": "Bloomberg",
+      "url": "https://www.bloomberg.com/news/markets/treasury-yield",
+      "publishedAt": "2026-04-29T13:22:00Z"
+    },
+    {
+      "id": "tech-correction",
+      "title": "Tech-Heavy Nasdaq Slips Into Correction as AI Names Pull Back",
+      "source": "WSJ",
+      "url": "https://www.wsj.com/markets/tech-correction",
+      "publishedAt": "2026-04-28T20:45:00Z"
+    },
+    {
+      "id": "vanguard-tdf-flows",
+      "title": "Investors Pour Record $90B Into Target-Date Funds in Q1",
+      "source": "Morningstar",
+      "url": "https://www.morningstar.com/funds/tdf-flows",
+      "publishedAt": "2026-04-27T11:00:00Z"
+    },
+    {
+      "id": "bond-rebalance-2026",
+      "title": "Why Pension Funds Are Quietly Rebalancing Toward Long Bonds",
+      "source": "Financial Times",
+      "url": "https://www.ft.com/markets/pension-rebalance",
+      "publishedAt": "2026-04-26T07:30:00Z"
+    },
+    {
+      "id": "inflation-cpi-3-1",
+      "title": "CPI Holds at 3.1% in April, Above Fed's 2% Target for 36th Straight Month",
+      "source": "AP",
+      "url": "https://apnews.com/article/cpi-april-2026",
+      "publishedAt": "2026-04-25T13:30:00Z"
+    },
+    {
+      "id": "mortgage-rate-relief",
+      "title": "30-Year Mortgage Rate Slips to 6.8%, Lowest in Six Months",
+      "source": "CNBC",
+      "url": "https://www.cnbc.com/markets/mortgage-rate",
+      "publishedAt": "2026-04-24T15:10:00Z"
+    },
+    {
+      "id": "spx-ath-watch",
+      "title": "S&P 500 Within 2% of All-Time High as Earnings Season Wraps",
+      "source": "Yahoo Finance",
+      "url": "https://finance.yahoo.com/news/sp500-ath-watch",
+      "publishedAt": "2026-04-23T19:20:00Z"
+    }
+  ]
+}
