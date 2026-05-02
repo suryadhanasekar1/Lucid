@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { GraduationCap, Trash2, RotateCcw, BookOpen, Microscope, Sparkles } from "lucide-react";
+import Link from "next/link";
+import { ArrowLeft, GraduationCap, Trash2, RotateCcw, BookOpen, Microscope, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -49,6 +50,18 @@ export function EducationChat() {
       <Card className="glass-surface border-border/30 shadow-none">
         <CardContent className="flex items-center justify-between gap-3 p-4">
           <div className="flex items-center gap-3">
+            <Button
+              asChild
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              aria-label="Back to dashboard"
+              title="Back to dashboard"
+            >
+              <Link href="/dashboard">
+                <ArrowLeft className="h-4 w-4" />
+              </Link>
+            </Button>
             <div
               className="flex h-9 w-9 items-center justify-center rounded-full"
               style={{
