@@ -1,14 +1,24 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, XAxis, YAxis } from "recharts";
 import { Search, TrendingUp } from "lucide-react";
 import { usePortfolio } from "@/hooks/usePortfolio";
 import { useStockExplorer } from "@/hooks/useStockExplorer";
 import { WidgetCard } from "@/components/shared/v1/WidgetCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/components/ui/chart";
 import { cn } from "@/lib/utils";
+
+const chartConfig = {
+  close: { label: "Close", color: "hsl(var(--primary))" },
+} satisfies ChartConfig;
 
 const PERIODS = [
   ["1mo", "1M"],
@@ -179,37 +189,35 @@ export function StockExplorer() {
 
         <div style={chartShell}>
           {explorer.chartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={170}>
+            <ChartContainer config={chartConfig} className="h-[170px] w-full">
               <AreaChart data={explorer.chartData} margin={{ top: 10, right: 4, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="stockExplorerGold" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--gold-primary)" stopOpacity={0.45} />
-                    <stop offset="95%" stopColor="var(--gold-primary)" stopOpacity={0.02} />
+                    <stop offset="5%" stopColor="var(--color-close)" stopOpacity={0.45} />
+                    <stop offset="95%" stopColor="var(--color-close)" stopOpacity={0.02} />
                   </linearGradient>
                 </defs>
                 <XAxis dataKey="date" hide />
                 <YAxis domain={["dataMin", "dataMax"]} hide />
-                <Tooltip
-                  contentStyle={{
-                    background: "var(--bg-elevated-2)",
-                    border: "1px solid var(--border-default)",
-                    borderRadius: 8,
-                    color: "var(--text-primary)",
-                    fontFamily: "var(--font-body)",
-                    fontSize: 12,
-                  }}
-                  formatter={(value) => [`$${Number(value).toFixed(2)}`, "Close"]}
+                <ChartTooltip
+                  cursor={{ stroke: "hsl(var(--primary) / 0.4)", strokeDasharray: "3 3" }}
+                  content={
+                    <ChartTooltipContent
+                      indicator="line"
+                      formatter={(value) => `$${Number(value).toFixed(2)}`}
+                    />
+                  }
                 />
                 <Area
                   type="monotone"
                   dataKey="close"
-                  stroke="var(--gold-primary)"
+                  stroke="var(--color-close)"
                   strokeWidth={2}
                   fill="url(#stockExplorerGold)"
                   dot={false}
                 />
               </AreaChart>
-            </ResponsiveContainer>
+            </ChartContainer>
           ) : (
             <div style={chartEmpty}>
               <TrendingUp size={24} color="var(--gold-primary)" />

@@ -1,20 +1,30 @@
 "use client";
 
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+import { Cell, Pie, PieChart } from "recharts";
 import { useAdaptiveMode } from "@/hooks/useAdaptiveMode";
 import { useSectorExposure, type ExposureSlice } from "@/hooks/useSectorExposure";
 import { WidgetCard } from "@/components/shared/v1/WidgetCard";
 import { WIDGETS_BY_ID } from "@/lib/widgets/registry";
 import { formatPct, formatUSD } from "@/lib/utils";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/components/ui/chart";
 
 const COLORS = [
-  "var(--gold-primary)",
-  "var(--signal-info)",
-  "var(--signal-positive)",
-  "var(--signal-warning)",
-  "var(--signal-negative)",
-  "var(--text-tertiary)",
+  "hsl(var(--chart-1))",
+  "hsl(var(--chart-2))",
+  "hsl(var(--chart-3))",
+  "hsl(var(--chart-5))",
+  "hsl(var(--chart-4))",
+  "hsl(var(--muted-foreground))",
 ];
+
+const chartConfig = {
+  value: { label: "Allocation" },
+} satisfies ChartConfig;
 
 export function SectorExposureWidget() {
   const { sectors, geography } = useSectorExposure();
@@ -36,16 +46,26 @@ function ExposurePie({ title, data }: { title: string; data: ExposureSlice[] }) 
   return (
     <div style={{ display: "grid", gap: "var(--space-2)", minWidth: 0 }}>
       <p style={titleStyle}>{title}</p>
-      <ResponsiveContainer width="100%" height={180}>
+      <ChartContainer config={chartConfig} className="mx-auto h-[180px] w-full">
         <PieChart>
           <Pie data={data} dataKey="value" nameKey="name" innerRadius={42} outerRadius={74} paddingAngle={2}>
             {data.map((slice, i) => (
               <Cell key={slice.name} fill={COLORS[i % COLORS.length]} />
             ))}
           </Pie>
-          <Tooltip content={<ExposureTooltip />} />
+          <ChartTooltip
+            content={
+              <ChartTooltipContent
+                hideIndicator
+                formatter={(value, _name, item) => {
+                  const s = item?.payload as ExposureSlice | undefined;
+                  return s ? `${formatPct(s.percent, 1)} · ${formatUSD(Math.round(s.value))}` : String(value);
+                }}
+              />
+            }
+          />
         </PieChart>
-      </ResponsiveContainer>
+      </ChartContainer>
       <div style={{ display: "grid", gap: 6 }}>
         {data.slice(0, 4).map((slice, i) => (
           <div key={slice.name} style={{ display: "flex", gap: 8, alignItems: "center", justifyContent: "space-between" }}>
@@ -57,17 +77,6 @@ function ExposurePie({ title, data }: { title: string; data: ExposureSlice[] }) 
           </div>
         ))}
       </div>
-    </div>
-  );
-}
-
-function ExposureTooltip({ active, payload }: { active?: boolean; payload?: Array<{ payload: ExposureSlice }> }) {
-  if (!active || !payload?.length) return null;
-  const slice = payload[0]!.payload;
-  return (
-    <div style={{ background: "var(--bg-elevated-2)", border: "1px solid var(--border-default)", borderRadius: 8, padding: "var(--space-2)", fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--text-primary)" }}>
-      <div>{slice.name}</div>
-      <div>{formatPct(slice.percent, 1)} · {formatUSD(Math.round(slice.value))}</div>
     </div>
   );
 }
