@@ -1,9 +1,33 @@
 {
-  "fetchedAt": "2026-04-30T12:00:00Z",
+  "fetchedAt": "2026-05-02T10:42:54.357Z",
   "indicators": {
-    "CPIAUCSL": { "seriesId": "CPIAUCSL", "label": "Inflation (CPI year-over-year)", "value": 3.1, "unit": "%", "asOf": "2026-04-15" },
-    "DFF": { "seriesId": "DFF", "label": "Federal funds rate", "value": 4.5, "unit": "%", "asOf": "2026-04-29" },
-    "DGS10": { "seriesId": "DGS10", "label": "10-year Treasury yield", "value": 4.2, "unit": "%", "asOf": "2026-04-29" },
-    "MORTGAGE30US": { "seriesId": "MORTGAGE30US", "label": "30-year fixed mortgage rate", "value": 6.8, "unit": "%", "asOf": "2026-04-25" }
+    "CPIAUCSL": {
+      "seriesId": "CPIAUCSL",
+      "label": "Inflation (CPI year-over-year)",
+      "value": 3.3,
+      "unit": "%",
+      "asOf": "2026-03-01"
+    },
+    "DFF": {
+      "seriesId": "DFF",
+      "label": "Federal funds rate",
+      "value": 3.6,
+      "unit": "%",
+      "asOf": "2026-04-30"
+    },
+    "DGS10": {
+      "seriesId": "DGS10",
+      "label": "10-year Treasury yield",
+      "value": 4.4,
+      "unit": "%",
+      "asOf": "2026-04-30"
+    },
+    "MORTGAGE30US": {
+      "seriesId": "MORTGAGE30US",
+      "label": "30-year fixed mortgage rate",
+      "value": 6.3,
+      "unit": "%",
+      "asOf": "2026-04-30"
+    }
   }
 }
