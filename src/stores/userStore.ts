@@ -31,6 +31,8 @@ interface UserStore {
   updateDraft: (patch: SurveyDraft) => void;
   resetDraft: () => void;
   setStep: (step: SurveyStep) => void;
+  /** Update just the user's name on the profile + draft. */
+  setName: (name: string) => void;
 }
 
 const initialDraft: SurveyDraft = {
@@ -57,6 +59,13 @@ export const useUserStore = create<UserStore>()(
         set((s) => ({ draft: { ...s.draft, ...patch } })),
       resetDraft: () => set({ draft: { ...initialDraft }, step: "welcome" }),
       setStep: (step) => set({ step }),
+      setName: (name) =>
+        set((s) => ({
+          draft: { ...s.draft, name },
+          profile: s.profile
+            ? { ...s.profile, answers: { ...s.profile.answers, name } }
+            : s.profile,
+        })),
     }),
     {
       name: "compass:user",
