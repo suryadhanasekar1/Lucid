@@ -40,13 +40,15 @@ export function WidgetPicker() {
       <DropdownMenuTrigger asChild>
         <Button
           type="button"
-          variant="outline"
+          variant="ghost"
           size="sm"
-          className="h-8 gap-1.5 border-border/40 bg-secondary/30 px-2.5 text-[12px] text-muted-foreground hover:bg-secondary hover:text-foreground"
+          className="glass-input h-8 gap-1.5 rounded-full border-0 px-3.5 text-[12px] font-medium text-foreground/80 hover:text-foreground"
         >
-          <Plus className="h-3.5 w-3.5" />
+          <Plus className="h-3.5 w-3.5 text-primary" />
           Widgets
-          <span className="ml-1 font-mono text-[11px] text-primary">{active.length}</span>
+          <span className="ml-0.5 rounded-full bg-primary/15 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-primary">
+            {active.length}
+          </span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent

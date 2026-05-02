@@ -120,9 +120,9 @@ export function DashboardClient() {
             <WidgetPicker />
             <Link
               href="/learn"
-              className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border/40 bg-secondary/30 px-2.5 text-[12px] font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              className="glass-input inline-flex h-8 items-center gap-1.5 rounded-full border-0 px-3.5 text-[12px] font-medium text-foreground/80 transition-colors hover:text-foreground"
             >
-              <GraduationCap className="h-3.5 w-3.5" />
+              <GraduationCap className="h-3.5 w-3.5 text-primary" />
               Learn
             </Link>
             <UIModeToggle />
