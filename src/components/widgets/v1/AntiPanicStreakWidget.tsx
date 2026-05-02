@@ -15,7 +15,7 @@ const ONE_DAY_MS = 24 * 60 * 60 * 1000;
  *
  * "Streak" = days since the last `proceeded` (panic-sold) breaker event.
  * If the user has never proceeded, we count from the first breaker fire (the
- * implicit "I started using Compass" moment). Empty history → 0.
+ * implicit "I started using Lucid" moment). Empty history → 0.
  */
 export function AntiPanicStreakWidget() {
   const { history } = useCircuitBreaker();

@@ -103,7 +103,7 @@ export function WorryTranslatorWidget() {
           {lifeEvent && (
             <div style={lifeEventBox}>
               <p style={{ ...body, margin: 0 }}>
-                It sounds like {lifeEvent.event.replaceAll("_", " ")}. Want Compass to adjust your profile?
+                It sounds like {lifeEvent.event.replaceAll("_", " ")}. Want Lucid to adjust your profile?
               </p>
               <p style={{ ...muted, margin: 0 }}>{lifeEvent.adjustment.explanation}</p>
               <div style={{ display: "flex", gap: "var(--space-2)" }}>

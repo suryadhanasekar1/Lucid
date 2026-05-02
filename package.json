@@ -1,8 +1,8 @@
 {
-  "name": "compass",
+  "name": "lucid",
   "version": "0.1.0",
   "private": true,
-  "description": "Compass — navigating the unknown for the everyday investor.",
+  "description": "Lucid — navigating the unknown for the everyday investor.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

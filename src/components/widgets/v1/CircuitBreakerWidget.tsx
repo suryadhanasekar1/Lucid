@@ -50,7 +50,7 @@ export function CircuitBreakerWidget() {
     <WidgetCard title={def.title} rationale={def.rationale} badge="Circuit Breaker">
       <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-3)" }}>
         <p style={muted}>
-          Whenever you try to sell, Compass holds the trade for 60 seconds and asks you to type a real reason. Most of the panic clears in that minute.
+          Whenever you try to sell, Lucid holds the trade for 60 seconds and asks you to type a real reason. Most of the panic clears in that minute.
         </p>
 
         <div

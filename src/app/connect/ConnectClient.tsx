@@ -89,10 +89,10 @@ export function ConnectClient() {
   return (
     <main style={shell}>
       <section style={{ maxWidth: 560 }}>
-        <p style={eyebrow}>Compass</p>
+        <p style={eyebrow}>Lucid</p>
         <h1 style={hero}>Connect your brokerage.</h1>
         <p style={helper}>
-          Compass uses SnapTrade to read your real holdings — never to make trades. If
+          Lucid uses SnapTrade to read your real holdings — never to make trades. If
           this fails or you skip it, we&apos;ll show a sample portfolio so you can keep
           looking around.
         </p>

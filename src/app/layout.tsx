@@ -6,10 +6,10 @@ import { HelloBadge } from "@/components/shared/v1/HelloBadge";
 import "@/styles/globals.css";
 
 export const metadata: Metadata = {
-  title: "Compass — Navigating the unknown for the everyday investor",
+  title: "Lucid — Navigating the unknown for the everyday investor",
   description:
-    "Compass helps beginners grow their money without losing sleep over it. Real holdings via SnapTrade, real fund composition via SEC EDGAR, real macro conditions via FRED.",
-  applicationName: "Compass",
+    "Lucid helps beginners grow their money without losing sleep over it. Real holdings via SnapTrade, real fund composition via SEC EDGAR, real macro conditions via FRED.",
+  applicationName: "Lucid",
   manifest: "/manifest.webmanifest",
   icons: {
     icon: "/icon.svg",
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   },
   appleWebApp: {
     capable: true,
-    title: "Compass",
+    title: "Lucid",
     statusBarStyle: "black-translucent",
   },
   formatDetection: {

@@ -16,7 +16,7 @@ export function WelcomeScreen({ onStart }: { onStart: () => void }) {
             margin: 0,
           }}
         >
-          Compass helps you grow your money without losing sleep over it.
+          Lucid helps you grow your money without losing sleep over it.
         </h1>
         <p
           style={{

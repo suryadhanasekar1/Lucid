@@ -61,10 +61,10 @@ export function DashboardClient() {
     return (
       <main style={shell}>
         <section style={{ maxWidth: 560 }}>
-          <p style={eyebrow}>Compass</p>
+          <p style={eyebrow}>Lucid</p>
           <h1 style={hero}>Take the 90-second survey first.</h1>
           <p style={helper}>
-            Compass needs your goals, timeline, and pain threshold before it can build a
+            Lucid needs your goals, timeline, and pain threshold before it can build a
             dashboard worth showing.
           </p>
           <Link href="/onboarding" style={primaryCta}>
@@ -104,7 +104,7 @@ export function DashboardClient() {
         }}
       >
         <div>
-          <p style={eyebrow}>Compass</p>
+          <p style={eyebrow}>Lucid</p>
           <h1 style={hero}>
             Built around{" "}
             <span style={{ color: "var(--gold-primary)" }}>

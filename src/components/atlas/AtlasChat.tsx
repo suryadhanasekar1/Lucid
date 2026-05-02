@@ -74,7 +74,7 @@ export function AtlasChat({ onClose }: Props) {
           <div className="flex flex-col gap-1">
             <span className="text-sm font-semibold text-foreground">Atlas</span>
             <Badge variant="outline" className="h-5 w-fit border-primary/40 bg-primary/10 px-2 text-[10px] font-medium uppercase tracking-wider text-primary">
-              Compass · AI
+              Lucid · AI
             </Badge>
           </div>
         </div>

@@ -59,7 +59,7 @@
   --ds-gray-alpha-400: var(--border-default);
 
   /* ─── shadcn semantic tokens (HSL triplets, no hsl() wrapper) ───
-   * Mapped to the Compass gold-on-dark palette so all shadcn components
+   * Mapped to the Lucid gold-on-dark palette so all shadcn components
    * (Card, Button, Badge, Table, Chart, Tooltip, DropdownMenu) inherit
    * the same look as the rest of the app. */
   --background: 240 7% 4%;            /* #0A0A0B  bg-base */

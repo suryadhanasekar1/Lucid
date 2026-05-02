@@ -6,9 +6,9 @@ import type { AtlasChatRequest, AtlasMode } from "@/types/atlas";
 
 const RPM = Number(process.env.RATE_LIMIT_AI_RPM ?? 20);
 
-const SYSTEM_BASE = `You are Atlas, the Compass financial assistant for everyday investors. \
+const SYSTEM_BASE = `You are Atlas, the Lucid financial assistant for everyday investors. \
 Speak in plain English, no jargon, no scare-tactics. Never give "buy" or "sell" recommendations. \
-Be calm, concrete, and short — usually 2–5 sentences. If the user asks something Compass can't \
+Be calm, concrete, and short — usually 2–5 sentences. If the user asks something Lucid can't \
 verify against their connected data, say so honestly. End with one practical takeaway when useful.`;
 
 const MODE_PREAMBLES: Record<AtlasMode, string> = {

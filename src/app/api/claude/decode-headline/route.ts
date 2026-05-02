@@ -6,7 +6,7 @@ import type { Citation, Headline, HeadlineDecoded, MacroSnapshot, UserProfile } 
 
 const RPM = Number(process.env.RATE_LIMIT_AI_RPM ?? 20);
 
-const SYSTEM_PREAMBLE = `You are Compass — a financial-clarity tool. The user \
+const SYSTEM_PREAMBLE = `You are Lucid — a financial-clarity tool. The user \
 is going to give you a financial headline. Your job:
 
 1. Translate the headline into plain English (1-2 sentences). What does it \

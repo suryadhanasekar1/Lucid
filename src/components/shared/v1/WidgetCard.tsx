@@ -19,7 +19,7 @@ interface Props {
 }
 
 /**
- * Widget chrome — shadcn `Card` skinned with the Compass liquid-glass utility.
+ * Widget chrome — shadcn `Card` skinned with the Lucid liquid-glass utility.
  * Shadow off (the layered black backdrop carries depth); padding tighter on
  * top so the drag-handle dot sits flush.
  */

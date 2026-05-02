@@ -118,7 +118,7 @@ export function HeaderHealthGauge() {
             </div>
             <p style={toastBody}>
               {lastResult.alreadyClose
-                ? "Your portfolio was already close to your comfort zone, so Compass kept the changes minimal."
+                ? "Your portfolio was already close to your comfort zone, so Lucid kept the changes minimal."
                 : "We reduced exposure to high-volatility stocks and moved more of your portfolio into broad market funds, bonds, and cash."}
             </p>
             <div style={toastGrid}>

@@ -1,7 +1,7 @@
 {
-  "name": "Compass — Navigating the unknown for the everyday investor",
-  "short_name": "Compass",
-  "description": "Compass helps everyday investors understand their portfolio in plain English. Real holdings via SnapTrade, real fund composition via SEC EDGAR, real macro via FRED.",
+  "name": "Lucid — Navigating the unknown for the everyday investor",
+  "short_name": "Lucid",
+  "description": "Lucid helps everyday investors understand their portfolio in plain English. Real holdings via SnapTrade, real fund composition via SEC EDGAR, real macro via FRED.",
   "start_url": "/dashboard?demo=1",
   "scope": "/",
   "display": "standalone",

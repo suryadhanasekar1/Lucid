@@ -50,7 +50,7 @@ export async function GET(req: Request) {
 
     const res = await fetch(chartUrl, {
       headers: {
-        "User-Agent": "Compass/1.0 contact@example.com",
+        "User-Agent": "Lucid/1.0 contact@example.com",
         Accept: "application/json",
       },
       cache: "no-store",

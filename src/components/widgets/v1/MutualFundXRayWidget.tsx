@@ -130,7 +130,7 @@ export function MutualFundXRayWidget() {
                 color: "var(--text-tertiary)",
               }}
             >
-              Source: {fundData.fundTicker} Form N-PORT, filed {fundData.asOf}. Compass pulls this directly from SEC.gov.
+              Source: {fundData.fundTicker} Form N-PORT, filed {fundData.asOf}. Lucid pulls this directly from SEC.gov.
             </p>
           </div>
         )}

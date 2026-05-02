@@ -41,7 +41,7 @@ const config: Config = {
         "context-card-border": "var(--context-card-border)",
         "gray-1000": "var(--ds-gray-1000)",
         "gray-alpha-400": "var(--ds-gray-alpha-400)",
-        // shadcn semantic tokens — mapped to Compass gold-on-dark palette in globals.css.
+        // shadcn semantic tokens — mapped to Lucid gold-on-dark palette in globals.css.
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         card: {

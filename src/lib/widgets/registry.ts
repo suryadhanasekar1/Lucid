@@ -27,7 +27,7 @@ export const WIDGETS: WidgetDefinition[] = [
     title: "Agent Inbox",
     category: "planning",
     priority: "P0",
-    rationale: "Always shown — Compass surfaces the few portfolio actions worth your attention.",
+    rationale: "Always shown — Lucid surfaces the few portfolio actions worth your attention.",
     triggers: always,
   },
   {

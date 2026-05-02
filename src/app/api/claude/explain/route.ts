@@ -4,7 +4,7 @@ import { ipFromRequest, rateLimit } from "@/lib/rate-limit";
 
 const RPM = Number(process.env.RATE_LIMIT_AI_RPM ?? 20);
 
-const SYSTEM_PREAMBLE = `You are Compass, a financial-clarity tool for everyday investors. \
+const SYSTEM_PREAMBLE = `You are Lucid, a financial-clarity tool for everyday investors. \
 Your job in this endpoint is "Tell Me More" — explain a single financial \
 concept in 2-3 sentences, in plain English, no jargon, no scare-tactics, no \
 recommendations. Never give "buy" / "sell" advice. Stay under 60 words. \
@@ -15,7 +15,7 @@ const FALLBACKS: Record<string, string> = {
   health_score:
     "Your Health Score blends four things: how diversified you are, how well your portfolio matches your goal, how much risk you're carrying versus what you can stomach, and what fees you're paying. It's a snapshot, not a verdict.",
   total_value:
-    "This is the total dollar value of everything you own across the accounts Compass can see. It moves daily as prices change.",
+    "This is the total dollar value of everything you own across the accounts Lucid can see. It moves daily as prices change.",
   foundation_frontier:
     "Foundation = boring, broadly-diversified core (think index funds). Frontier = concentrated bets on individual stocks or themes. Most healthy portfolios are heavier on the Foundation side.",
   goal_progress:
@@ -27,7 +27,7 @@ const FALLBACKS: Record<string, string> = {
   worry_translator:
     "Type any worry — \"will my retirement be okay?\", \"is the bond market broken?\" — and we'll translate it into plain English with the macro data behind it.",
   circuit_breaker:
-    "When you click Sell, Compass holds the trade for 60 seconds and asks you to type a real reason. The data is unflattering: most panic sells underperform the held position over the next 12 months. The pause is on your side.",
+    "When you click Sell, Lucid holds the trade for 60 seconds and asks you to type a real reason. The data is unflattering: most panic sells underperform the held position over the next 12 months. The pause is on your side.",
   headline_decoder:
     "Each headline gets a label — Noise, Watch, or Act. Noise is the daily churn that doesn't change a long-term plan. Watch is worth being aware of. Act is rare. Default to Noise unless something material has changed for the assets you actually own.",
   cost_tax_receipt:

@@ -321,7 +321,7 @@ async function getSearchFundamentals(symbol: string): Promise<{
 async function fetchJson<T>(url: URL): Promise<T> {
   const res = await fetch(url, {
     headers: {
-      "User-Agent": "Compass/1.0 contact@example.com",
+      "User-Agent": "Lucid/1.0 contact@example.com",
       Accept: "application/json",
     },
     cache: "no-store",

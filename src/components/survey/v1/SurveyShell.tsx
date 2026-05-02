@@ -44,7 +44,7 @@ export function SurveyShell({ step, children }: Props) {
               color: "var(--gold-primary)",
             }}
           >
-            Compass
+            Lucid
           </span>
           <ProgressDots total={totalSteps} index={progressIndex} />
         </header>

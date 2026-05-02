@@ -193,7 +193,7 @@ export function CircuitBreakerModal() {
                   margin: 0,
                 }}
               >
-                Most panic sells look worse the next morning. Compass holds the trade for one minute so you have a chance to walk away. Press Escape to cancel.
+                Most panic sells look worse the next morning. Lucid holds the trade for one minute so you have a chance to walk away. Press Escape to cancel.
               </p>
             </header>
 

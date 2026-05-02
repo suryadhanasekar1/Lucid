@@ -15,7 +15,7 @@ import { formatUSD, formatPct } from "@/lib/utils";
  * Two stacked tables:
  *   1. Annual fee drag, per holding, weighted by today's ER table.
  *   2. Estimated long-term cap gains tax if every position with a gain were
- *      sold today (15% bracket). Pure illustration — Compass never recommends
+ *      sold today (15% bracket). Pure illustration — Lucid never recommends
  *      a sale; it just makes the cost visible.
  */
 export function CostTaxReceiptWidget() {

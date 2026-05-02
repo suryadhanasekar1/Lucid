@@ -29,7 +29,7 @@ export default function Page() {
             marginBottom: "var(--space-6)",
           }}
         >
-          Compass
+          Lucid
         </p>
 
         <h1
