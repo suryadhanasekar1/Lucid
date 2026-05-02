@@ -17,7 +17,15 @@ export function HeaderHealthGauge() {
   const reducedMotion = usePrefersReducedMotion();
   const riskScore = Math.max(0, Math.min(100, Math.round(analysis.riskFitScore)));
   const overallScore = Math.max(0, Math.min(100, Math.round(score)));
-  const riskColor = riskStatusColor(analysis.status);
+  const rebalanced = Boolean(lastResult);
+  const riskColor = rebalanced ? "var(--signal-positive)" : riskStatusColor(analysis.status);
+  const accentColor = rebalanced ? "var(--signal-positive)" : "var(--signal-info)";
+  const accentBorder = rebalanced
+    ? "rgba(127, 176, 105, 0.55)"
+    : "rgba(107, 143, 181, 0.45)";
+  const accentGlow = rebalanced
+    ? "0 0 24px rgba(127, 176, 105, 0.25), var(--shadow-elevated)"
+    : "var(--shadow-elevated)";
   const segments = [
     { label: "Diversification", value: components.diversification, color: scoreColor(components.diversification) },
     { label: "Fees", value: components.fees, color: scoreColor(components.fees) },
@@ -53,14 +61,17 @@ export function HeaderHealthGauge() {
               zIndex: 50,
               padding: "var(--space-4)",
               borderRadius: 14,
-              border: "1px solid var(--border-emphasis)",
+              border: `1px solid ${accentBorder}`,
               background: "var(--bg-elevated)",
-              boxShadow: "var(--shadow-elevated)",
+              boxShadow: accentGlow,
+              transition: "border-color 280ms ease, box-shadow 280ms ease",
             }}
             role="dialog"
             aria-label="Portfolio health insights"
           >
-            <p style={panelEyebrow}>Portfolio Health Insights</p>
+            <p style={{ ...panelEyebrow, color: accentColor, transition: "color 280ms ease" }}>
+              Portfolio Health Insights
+            </p>
             <p style={panelBody}>{summaryFor(overallScore)}</p>
             <div style={riskSection}>
               <div style={scoreRow}>
@@ -72,9 +83,14 @@ export function HeaderHealthGauge() {
                 type="button"
                 size="sm"
                 onClick={rebalance}
-                className="h-8 w-full bg-primary text-primary-foreground shadow-glow-gold hover:bg-primary/90"
+                disabled={rebalanced}
+                className={
+                  rebalanced
+                    ? "h-8 w-full border border-[color:var(--signal-positive)] bg-[color:var(--signal-positive)]/15 text-[color:var(--signal-positive)] transition-colors disabled:opacity-100"
+                    : "h-8 w-full bg-primary text-primary-foreground shadow-glow-gold transition-colors hover:bg-primary/90"
+                }
               >
-                Rebalance
+                {rebalanced ? "Rebalanced ✓" : "Rebalance"}
               </Button>
             </div>
             <div style={{ display: "grid", gap: "var(--space-2)", marginTop: "var(--space-3)" }}>
