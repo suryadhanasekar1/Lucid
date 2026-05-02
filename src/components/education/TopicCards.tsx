@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
+import { TiltCard } from "@/components/shared/v1/TiltCard";
 import { cn } from "@/lib/utils";
 
 const TOPICS = [
@@ -22,27 +23,28 @@ export function TopicCards({ onPick }: { onPick: (prompt: string) => void }) {
   return (
     <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
       {TOPICS.map((t) => (
-        <Card
-          key={t.title}
-          role="button"
-          tabIndex={0}
-          onClick={() => onPick(t.prompt)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              onPick(t.prompt);
-            }
-          }}
-          className={cn(
-            "glass-surface cursor-pointer border-border/30 bg-secondary/20 transition-all hover:border-primary/50 hover:bg-secondary/40",
-          )}
-        >
-          <CardContent className="p-3">
-            <p className="text-[11px] font-medium uppercase tracking-wider text-primary/70">Lesson</p>
-            <p className="mt-1 text-[14px] font-medium text-foreground">{t.title}</p>
-            <p className="mt-1 line-clamp-1 text-[12px] text-muted-foreground">{t.prompt}</p>
-          </CardContent>
-        </Card>
+        <TiltCard key={t.title} maxTilt={3}>
+          <Card
+            role="button"
+            tabIndex={0}
+            onClick={() => onPick(t.prompt)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onPick(t.prompt);
+              }
+            }}
+            className={cn(
+              "glass-surface h-full cursor-pointer border-border/30 bg-secondary/20 transition-all hover:border-primary/50 hover:bg-secondary/40",
+            )}
+          >
+            <CardContent className="p-3">
+              <p className="text-[11px] font-medium uppercase tracking-wider text-primary/70">Lesson</p>
+              <p className="mt-1 text-[14px] font-medium text-foreground">{t.title}</p>
+              <p className="mt-1 line-clamp-1 text-[12px] text-muted-foreground">{t.prompt}</p>
+            </CardContent>
+          </Card>
+        </TiltCard>
       ))}
     </div>
   );
