@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+
 const PROMPTS = [
   "What's in my portfolio right now?",
   "How risky is my current allocation?",
@@ -9,44 +11,20 @@ const PROMPTS = [
 
 export function SuggestedPrompts({ onPick }: { onPick: (text: string) => void }) {
   return (
-    <div className="flex flex-col gap-2 w-full">
-      <div
-        style={{
-          fontSize: 11,
-          fontWeight: 600,
-          letterSpacing: 0.5,
-          textTransform: "uppercase",
-          color: "var(--text-tertiary)",
-        }}
-      >
+    <div className="flex w-full flex-col gap-2">
+      <span className="text-[11px] font-semibold uppercase tracking-[0.5px] text-muted-foreground">
         Try asking
-      </div>
+      </span>
       {PROMPTS.map((p) => (
-        <button
+        <Button
           key={p}
           type="button"
+          variant="outline"
           onClick={() => onPick(p)}
-          className="text-left transition-colors"
-          style={{
-            padding: "10px 12px",
-            borderRadius: 10,
-            background: "var(--bg-elevated-2)",
-            border: "1px solid var(--border-subtle)",
-            color: "var(--text-secondary)",
-            fontSize: 13,
-            cursor: "pointer",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = "var(--gold-primary)";
-            e.currentTarget.style.color = "var(--text-primary)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = "var(--border-subtle)";
-            e.currentTarget.style.color = "var(--text-secondary)";
-          }}
+          className="h-auto justify-start whitespace-normal border-border/40 bg-secondary/40 px-3 py-2.5 text-left text-[13px] font-normal text-muted-foreground hover:border-primary/60 hover:bg-secondary hover:text-foreground"
         >
           {p}
-        </button>
+        </Button>
       ))}
     </div>
   );

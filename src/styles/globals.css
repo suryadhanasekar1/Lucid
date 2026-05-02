@@ -57,6 +57,37 @@
   --context-card-border: var(--border-default);
   --ds-gray-1000: var(--text-primary);
   --ds-gray-alpha-400: var(--border-default);
+
+  /* ─── shadcn semantic tokens (HSL triplets, no hsl() wrapper) ───
+   * Mapped to the Compass gold-on-dark palette so all shadcn components
+   * (Card, Button, Badge, Table, Chart, Tooltip, DropdownMenu) inherit
+   * the same look as the rest of the app. */
+  --background: 240 7% 4%;            /* #0A0A0B  bg-base */
+  --foreground: 60 23% 95%;           /* #F5F5F0  text-primary */
+  --card: 240 7% 7%;                  /* #121215  bg-elevated */
+  --card-foreground: 60 23% 95%;
+  --popover: 240 7% 7%;
+  --popover-foreground: 60 23% 95%;
+  --primary: 43 49% 58%;              /* #C9A961  gold-primary */
+  --primary-foreground: 240 7% 4%;
+  --secondary: 240 7% 11%;            /* #1A1A1F  bg-elevated-2 */
+  --secondary-foreground: 60 23% 95%;
+  --muted: 240 7% 11%;
+  --muted-foreground: 60 4% 65%;      /* #A8A8A2  text-secondary */
+  --accent: 46 64% 52%;               /* #D4AF37  gold-bright */
+  --accent-foreground: 240 7% 4%;
+  --destructive: 8 50% 57%;           /* #C76B5A  signal-negative */
+  --destructive-foreground: 60 23% 95%;
+  --border: 60 12% 96% / 0.12;        /* matches --border-default */
+  --input: 60 12% 96% / 0.12;
+  --ring: 43 49% 58%;                 /* gold focus ring */
+  --radius: 0.875rem;                 /* 14px — matches existing card radii */
+  /* Chart palette — gold leads, signals follow, neutrals fill out. */
+  --chart-1: 43 49% 58%;              /* gold-primary */
+  --chart-2: 197 37% 56%;             /* signal-info */
+  --chart-3: 96 30% 55%;              /* signal-positive */
+  --chart-4: 8 50% 57%;               /* signal-negative */
+  --chart-5: 41 79% 59%;              /* signal-warning */
 }
 
 html,

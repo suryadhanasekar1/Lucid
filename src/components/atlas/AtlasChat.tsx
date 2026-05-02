@@ -2,6 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import { X, Sparkles, Trash2, RotateCcw } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { PromptInputBox, type AtlasPromptMode } from "@/components/ui/ai-prompt-box";
 import { MessageBubble } from "./MessageBubble";
 import { SuggestedPrompts } from "./SuggestedPrompts";
@@ -69,26 +71,37 @@ export function AtlasChat({ onClose }: Props) {
           >
             <Sparkles className="h-4 w-4" />
           </div>
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)" }}>Atlas</span>
-            <span style={{ fontSize: 11, color: "var(--text-tertiary)" }}>Compass financial assistant</span>
+          <div className="flex flex-col gap-1">
+            <span className="text-sm font-semibold text-foreground">Atlas</span>
+            <Badge variant="outline" className="h-5 w-fit border-primary/40 bg-primary/10 px-2 text-[10px] font-medium uppercase tracking-wider text-primary">
+              Compass · AI
+            </Badge>
           </div>
         </div>
-        <div style={{ display: "flex", gap: 4 }}>
+        <div className="flex gap-1">
           {messages.length > 0 && (
-            <button
+            <Button
               type="button"
+              size="icon"
+              variant="ghost"
+              className="h-7 w-7 text-muted-foreground hover:text-foreground"
               onClick={clearConversation}
               aria-label="Clear conversation"
-              style={iconBtn}
               title="Clear conversation"
             >
               <Trash2 className="h-4 w-4" />
-            </button>
+            </Button>
           )}
-          <button type="button" onClick={onClose} aria-label="Close" style={iconBtn}>
+          <Button
+            type="button"
+            size="icon"
+            variant="ghost"
+            className="h-7 w-7 text-muted-foreground hover:text-foreground"
+            onClick={onClose}
+            aria-label="Close"
+          >
             <X className="h-4 w-4" />
-          </button>
+          </Button>
         </div>
       </header>
 
@@ -184,15 +197,3 @@ export function AtlasChat({ onClose }: Props) {
   );
 }
 
-const iconBtn: React.CSSProperties = {
-  width: 28,
-  height: 28,
-  borderRadius: 8,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  background: "transparent",
-  border: "none",
-  color: "var(--text-tertiary)",
-  cursor: "pointer",
-};
