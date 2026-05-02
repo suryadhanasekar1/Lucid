@@ -244,3 +244,105 @@ body {
   white-space: nowrap;
   border: 0;
 }
+
+/* Hide scrollbars while keeping scroll behavior. Used on widget content areas
+ * and the Atlas chat scroll container so overflow scrolls silently. */
+.compass-hide-scrollbar {
+  scrollbar-width: none;             /* Firefox */
+  -ms-overflow-style: none;          /* IE/Edge legacy */
+}
+.compass-hide-scrollbar::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;                     /* Chrome / Safari / Edge / Opera */
+}
+
+/* Hide the main page scrollbar too — keeps scroll wheel + keyboard, just no bar. */
+html, body {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+/* ──────────────── Liquid Glass aesthetic ────────────────
+ * Apple-style frosted surfaces. Three layers:
+ *   1. Ambient body backdrop — blurry color so glass has something to refract.
+ *   2. Glass surface — translucent gradient + heavy backdrop-filter.
+ *   3. Inner highlight — top-edge light + bottom-edge shadow for depth.
+ */
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: -200px;
+  background:
+    radial-gradient(at 18% 22%, rgba(212, 175, 55, 0.12), transparent 45%),
+    radial-gradient(at 82% 78%, rgba(201, 169, 97, 0.08), transparent 50%),
+    radial-gradient(at 50% 100%, rgba(40, 30, 70, 0.18), transparent 55%);
+  pointer-events: none;
+  z-index: -1;
+  filter: blur(40px);
+}
+
+.glass-surface {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(245, 245, 240, 0.06) 0%,
+      rgba(245, 245, 240, 0.02) 100%
+    );
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(245, 245, 240, 0.10);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.30),
+    0 8px 32px rgba(0, 0, 0, 0.40);
+}
+
+.glass-surface:hover {
+  border-color: rgba(245, 245, 240, 0.16);
+  background:
+    linear-gradient(
+      135deg,
+      rgba(245, 245, 240, 0.08) 0%,
+      rgba(245, 245, 240, 0.03) 100%
+    );
+}
+
+.glass-surface-gold {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(212, 175, 55, 0.14) 0%,
+      rgba(201, 169, 97, 0.06) 100%
+    );
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(212, 175, 55, 0.30);
+  box-shadow:
+    inset 0 1px 0 rgba(212, 175, 55, 0.28),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.30),
+    0 8px 32px rgba(0, 0, 0, 0.50),
+    0 0 32px rgba(201, 169, 97, 0.18);
+}
+
+.glass-surface-deep {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(20, 20, 25, 0.65) 0%,
+      rgba(10, 10, 12, 0.78) 100%
+    );
+  backdrop-filter: blur(32px) saturate(160%);
+  -webkit-backdrop-filter: blur(32px) saturate(160%);
+  border: 1px solid rgba(245, 245, 240, 0.10);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 16px 48px rgba(0, 0, 0, 0.55);
+}

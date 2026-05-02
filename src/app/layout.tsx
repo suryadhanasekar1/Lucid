@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
 import { CircuitBreakerModal } from "@/components/shared/v1/CircuitBreakerModal";
+import { AtlasContainer } from "@/components/atlas/AtlasContainer";
+import { HelloBadge } from "@/components/shared/v1/HelloBadge";
 import "@/styles/globals.css";
 
 export const metadata: Metadata = {
@@ -22,6 +24,8 @@ export default function RootLayout({
       <body style={{ margin: 0, background: "var(--bg-base, #0A0A0B)" }}>
         {children}
         <CircuitBreakerModal />
+        <AtlasContainer />
+        <HelloBadge />
       </body>
     </html>
   );

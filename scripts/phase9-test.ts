@@ -88,17 +88,16 @@ async function main() {
   assertNoOverlap(full, "full layout");
   assertWithinGrid(full, "full layout");
 
-  // ─── 4. Tall widgets sink to bottom ─────────────────────────────────
-  // Compute mean y for top-quartile (smallest minH) and bottom-quartile (largest minH)
-  // widgets; the latter must be greater (i.e. lower on screen).
-  const byMinH = [...full].sort((a, b) => sizeFor(a.i).minH - sizeFor(b.i).minH);
-  const flexible = byMinH.slice(0, 4);
-  const rigid = byMinH.slice(-4);
-  const avg = (xs: GridLayoutItem[]) => xs.reduce((s, x) => s + x.y, 0) / xs.length;
-  if (avg(rigid) > avg(flexible)) {
-    ok(`tall widgets sink — flexible avg-y=${avg(flexible).toFixed(1)}, rigid avg-y=${avg(rigid).toFixed(1)}`);
+  // ─── 4. Packing density — no big gaps ────────────────────────────────
+  // After biggest-first first-fit packing, total area should fill the bounding
+  // box reasonably well. We require >=70% density (occupied / 12*maxY).
+  const totalArea = full.reduce((s, item) => s + item.w * item.h, 0);
+  const boundingArea = GRID_COLS * maxY(full);
+  const density = boundingArea > 0 ? totalArea / boundingArea : 0;
+  if (density >= 0.7) {
+    ok(`packing is dense — ${(density * 100).toFixed(1)}% (no big gaps)`);
   } else {
-    bad(`tall widgets did not sink: flexible avg-y=${avg(flexible).toFixed(1)}, rigid avg-y=${avg(rigid).toFixed(1)}`);
+    bad(`packing leaves big gaps: density=${(density * 100).toFixed(1)}%, maxY=${maxY(full)}, area=${totalArea}`);
   }
 
   // ─── 5. nextFreeSlot finds the smallest valid coordinate ────────────

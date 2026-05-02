@@ -3,18 +3,32 @@ import type { GridLayoutItem } from "@/types";
 /**
  * Layout primitives for the dashboard grid.
  *
- * The dashboard uses react-grid-layout; this module owns the *content-aware*
- * sizing per widget id and the deterministic placement algorithm used when no
- * persisted layout exists. RGL itself handles drag/drop + collision + compact;
- * we just feed it a sane initial state.
+ * Sizing strategy
+ * ---------------
+ * Each widget is classified by *shape* (portrait | square | landscape) based
+ * on the natural footprint of its content:
+ *   - portrait:  narrow + tall (lists, stacked sentences, AI input + result)
+ *   - square:    half-width balanced cards (stat panels, gauges, mini charts)
+ *   - landscape: wide + short (timeline charts, multi-stat strips)
+ *
+ * A small `CUSTOM_SIZES` table overrides the shape preset for widgets that
+ * genuinely need a custom footprint (Stock Explorer is far taller than any
+ * preset because it stacks chart + summary + stat grid + fit card).
+ *
+ * Placement strategy
+ * ------------------
+ * `buildInitialLayout` runs a biggest-first first-fit bin-packer on a 12-col
+ * grid. Largest items land first; smaller items then scan top-to-bottom for
+ * the first free slot and fall into gaps left by the mix of widths. After
+ * packing, vertical compaction pulls everything as high as it can go.
  */
 
 export const GRID_COLS = 12;
 
 export interface WidgetSize {
-  /** Default width in cols (1-12). */
+  /** Default width in cols (1–12). */
   w: number;
-  /** Default height in row units (each row ≈ 60px). */
+  /** Default height in row units (≈56px each + 16px margin). */
   h: number;
   /** Minimum width — RGL refuses to resize below this. */
   minW: number;
@@ -22,79 +36,86 @@ export interface WidgetSize {
   minH: number;
 }
 
-/**
- * Per-widget size requirements. Tuned to the actual content footprint
- * each widget renders (form + result for AI, table for cost/tax, gauge
- * for health, etc.). Widgets not listed fall back to `DEFAULT_SIZE`.
- */
-export const WIDGET_SIZES: Record<string, WidgetSize> = {
-  // Core
-  health_score: { w: 6, h: 9, minW: 4, minH: 8 },
-  action_queue: { w: 6, h: 5, minW: 4, minH: 4 },
-  total_value: { w: 6, h: 8, minW: 4, minH: 6 },
-  portfolio_history: { w: 6, h: 7, minW: 4, minH: 5 },
-  foundation_frontier: { w: 6, h: 4, minW: 4, minH: 3 },
-  goal_progress: { w: 6, h: 4, minW: 3, minH: 3 },
+type Shape = "portrait" | "square" | "landscape";
 
-  // Risk (tall — they hold a form + a result panel)
-  worry_translator: { w: 6, h: 8, minW: 4, minH: 6 },
-  headline_decoder: { w: 6, h: 9, minW: 4, minH: 7 },
-  circuit_breaker: { w: 6, h: 7, minW: 4, minH: 5 },
-  pain_threshold: { w: 6, h: 5, minW: 4, minH: 4 },
-
-  // Education
-  mutual_fund_xray: { w: 6, h: 8, minW: 4, minH: 6 },
-  macro_conditions: { w: 6, h: 8, minW: 4, minH: 6 },
-  what_you_own: { w: 6, h: 6, minW: 4, minH: 5 },
-  stock_explorer: { w: 6, h: 14, minW: 5, minH: 12 },
-  sector_exposure: { w: 6, h: 6, minW: 4, minH: 5 },
-
-  // Mechanics
-  cost_tax_receipt: { w: 6, h: 8, minW: 4, minH: 5 },
-
-  // Planning
-  quick_scenarios: { w: 6, h: 7, minW: 4, minH: 5 },
-
-  // Engagement
-  compare_to_index: { w: 6, h: 5, minW: 4, minH: 4 },
-  weekly_digest: { w: 6, h: 9, minW: 4, minH: 6 },
-  streak_tracker: { w: 4, h: 5, minW: 3, minH: 4 },
+const SHAPE_PRESETS: Record<Shape, WidgetSize> = {
+  portrait: { w: 4, h: 9, minW: 3, minH: 7 },
+  square: { w: 6, h: 8, minW: 4, minH: 6 },
+  landscape: { w: 8, h: 6, minW: 6, minH: 5 },
 };
 
-export const DEFAULT_SIZE: WidgetSize = { w: 6, h: 4, minW: 3, minH: 3 };
+/** Widgets that override the shape preset because their content needs a custom box. */
+const CUSTOM_SIZES: Record<string, WidgetSize> = {
+  stock_explorer: { w: 8, h: 18, minW: 6, minH: 16 },
+  health_score: { w: 6, h: 9, minW: 4, minH: 8 },
+};
+
+/** Per-widget shape classification. Anything not listed defaults to square. */
+const WIDGET_SHAPES: Record<string, Shape> = {
+  total_value: "square",
+  portfolio_history: "landscape",
+  macro_conditions: "landscape",
+  what_you_own: "portrait",
+  sector_exposure: "square",
+  mutual_fund_xray: "square",
+  cost_tax_receipt: "square",
+  compare_to_index: "landscape",
+  weekly_digest: "portrait",
+  streak_tracker: "square",
+  worry_translator: "portrait",
+  headline_decoder: "portrait",
+  circuit_breaker: "square",
+  pain_threshold: "square",
+  action_queue: "portrait",
+  foundation_frontier: "square",
+  goal_progress: "square",
+  quick_scenarios: "square",
+};
+
+const DEFAULT_SHAPE: Shape = "square";
+
+export const DEFAULT_SIZE: WidgetSize = SHAPE_PRESETS[DEFAULT_SHAPE];
 
 export function sizeFor(id: string): WidgetSize {
-  return WIDGET_SIZES[id] ?? DEFAULT_SIZE;
+  if (CUSTOM_SIZES[id]) return CUSTOM_SIZES[id]!;
+  const shape = WIDGET_SHAPES[id] ?? DEFAULT_SHAPE;
+  return SHAPE_PRESETS[shape];
 }
 
 /**
- * Initial placement.
+ * Derived size table — built from CUSTOM_SIZES + WIDGET_SHAPES so every
+ * classified widget has an entry. Kept exported for compatibility with the
+ * phase-9 test which asserts size-table coverage of the registry.
+ */
+export const WIDGET_SIZES: Record<string, WidgetSize> = (() => {
+  const out: Record<string, WidgetSize> = { ...CUSTOM_SIZES };
+  for (const [id, shape] of Object.entries(WIDGET_SHAPES)) {
+    if (!out[id]) out[id] = SHAPE_PRESETS[shape];
+  }
+  return out;
+})();
+
+/**
+ * Biggest-first first-fit bin-packer.
  *
- * Three-pass algorithm for balanced column layout:
- *   1. Sort widgets by `minH` ascending — short, flexible widgets settle first;
- *      tall, rigid widgets sink to the bottom.
- *   2. Distribute across two columns (left: x=0-5, right: x=6-11) to prevent
- *      everything stacking on the left and hiding content on the right.
- *   3. Within each column, place top-to-bottom.
+ * 1. Sort by area descending (priority order breaks ties).
+ * 2. For each widget, scan rows top-to-bottom, columns left-to-right, and
+ *    place at the topmost-leftmost slot where it fits without overlap.
+ * 3. Compact vertically so trailing items pull up into any column gaps.
  */
 export function buildInitialLayout(ids: string[]): GridLayoutItem[] {
-  const sorted = [...ids]
+  const items = ids
     .map((id, idx) => ({ id, idx, size: sizeFor(id) }))
     .sort((a, b) => {
-      if (a.size.minH !== b.size.minH) return a.size.minH - b.size.minH;
+      const areaA = a.size.w * a.size.h;
+      const areaB = b.size.w * b.size.h;
+      if (areaA !== areaB) return areaB - areaA;
       return a.idx - b.idx;
     });
 
   const placed: GridLayoutItem[] = [];
-  let leftY = 0;
-  let rightY = 0;
-
-  for (const { id, size } of sorted) {
-    // Alternate between left and right columns based on which is lower
-    const useLeft = leftY <= rightY;
-    const x = useLeft ? 0 : 6;
-    const y = useLeft ? leftY : rightY;
-
+  for (const { id, size } of items) {
+    const { x, y } = nextFreeSlot(placed, size.w, size.h);
     placed.push({
       i: id,
       x,
@@ -104,17 +125,8 @@ export function buildInitialLayout(ids: string[]): GridLayoutItem[] {
       minW: size.minW,
       minH: size.minH,
     });
-
-    if (useLeft) {
-      leftY += size.h;
-    } else {
-      rightY += size.h;
-    }
   }
-  // RGL works best when items are returned in row order (top-to-bottom,
-  // left-to-right). Sort the final layout by (y, x) so callers don't need
-  // to think about it.
-  return placed.sort((a, b) => (a.y - b.y) || (a.x - b.x));
+  return compactVertical(placed.sort((a, b) => a.y - b.y || a.x - b.x));
 }
 
 /** Find the first {x, y} where a w×h rect fits without overlapping `placed`. */
@@ -156,9 +168,7 @@ export function overlaps(a: Rect, b: Rect): boolean {
  * compactType so we can reason about layouts in tests without rendering.
  */
 export function compactVertical(layout: GridLayoutItem[]): GridLayoutItem[] {
-  // Process top-to-bottom, left-to-right so each item only needs to look at
-  // already-placed items.
-  const sorted = [...layout].sort((a, b) => (a.y - b.y) || (a.x - b.x));
+  const sorted = [...layout].sort((a, b) => a.y - b.y || a.x - b.x);
   const compacted: GridLayoutItem[] = [];
   for (const item of sorted) {
     let y = 0;
@@ -176,9 +186,9 @@ export function compactVertical(layout: GridLayoutItem[]): GridLayoutItem[] {
 
 /**
  * Reconcile a persisted layout with the current set of recommended widgets.
- * - Drops items the recommender no longer surfaces (so e.g. switching
- *   profiles doesn't leave orphaned grid slots).
- * - Adds default-sized entries for any newly recommended widgets.
+ * - Drops items the recommender no longer surfaces.
+ * - Adds default-sized entries for any newly recommended widgets, slotting
+ *   them into the first free position via the bin-packer.
  * - Re-runs vertical compaction so there are no gaps.
  */
 export function reconcileLayout(
@@ -192,9 +202,20 @@ export function reconcileLayout(
   if (missing.length === 0) {
     return compactVertical(kept);
   }
-  const fresh = buildInitialLayout(missing);
-  // Place fresh items below any existing ones, then recompact.
-  const maxY = kept.reduce((m, k) => Math.max(m, k.y + k.h), 0);
-  const offset = fresh.map((f) => ({ ...f, y: f.y + maxY }));
-  return compactVertical([...kept, ...offset]);
+  // Slot fresh items into existing holes via first-fit, then compact.
+  const next = [...kept];
+  for (const id of missing) {
+    const size = sizeFor(id);
+    const { x, y } = nextFreeSlot(next, size.w, size.h);
+    next.push({
+      i: id,
+      x,
+      y,
+      w: size.w,
+      h: size.h,
+      minW: size.minW,
+      minH: size.minH,
+    });
+  }
+  return compactVertical(next);
 }

@@ -18,7 +18,7 @@ export const CLAUDE_MODEL_LIGHT = "claude-haiku-4-5";
 
 let client: Anthropic | null = null;
 
-function getClient(): Anthropic | null {
+export function getClient(): Anthropic | null {
   if (client) return client;
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey || !apiKey.startsWith("sk-ant-")) return null;

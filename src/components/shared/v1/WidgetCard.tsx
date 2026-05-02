@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { cn } from "@/lib/utils";
 import { WhyIsThisHere } from "./WhyIsThisHere";
 
 interface Props {
@@ -12,33 +13,30 @@ interface Props {
    */
   badge?: string;
   hideHeader?: boolean;
+  className?: string;
   children: ReactNode;
 }
 
 /**
- * The shared widget chrome.
+ * The shared widget chrome — Apple liquid-glass aesthetic.
  *
- * Visual rules (minimalistic pass):
- *   - Hairline 1px border, no shadow, no eyebrow.
- *   - Title is small body text, not a display face.
- *   - Right-side header reserved for the "Why is this here?" affordance and
- *     the drag-handle dot (rendered by DashboardGrid as an absolute child).
- *   - Padding is tighter on top so the drag handle sits flush.
+ *   - `.glass-surface` Tailwind utility applies the frosted backdrop blur,
+ *     translucent gradient, top-edge highlight, and ambient shadow.
+ *   - The drag-handle dot is laid over the top-right by DashboardGrid.
+ *   - Inner content is a plain flex column; auto-fit grows the cell to fit.
  */
-export function WidgetCard({ title, rationale, hideHeader = false, children }: Props) {
+export function WidgetCard({ title, rationale, hideHeader = false, className, children }: Props) {
   return (
     <article
+      className={cn("glass-surface", className)}
       style={{
-        background: "var(--bg-elevated)",
-        border: "1px solid var(--border-subtle)",
-        borderRadius: 14,
+        borderRadius: 16,
         padding: "var(--space-6)",
         height: "100%",
         display: "flex",
         flexDirection: "column",
         gap: "var(--space-3)",
-        // Drop card shadow — the layered black background carries depth.
-        boxShadow: "none",
+        overflow: "hidden",
       }}
     >
       {!hideHeader && (
@@ -48,8 +46,6 @@ export function WidgetCard({ title, rationale, hideHeader = false, children }: P
             alignItems: "center",
             justifyContent: "space-between",
             gap: "var(--space-3)",
-            /* Reserve room for the drag handle that DashboardGrid lays over the
-             * top-right corner of every cell. */
             paddingRight: 28,
           }}
         >
@@ -68,7 +64,9 @@ export function WidgetCard({ title, rationale, hideHeader = false, children }: P
           {rationale && <WhyIsThisHere rationale={rationale} />}
         </header>
       )}
-      <div style={{ flex: 1, minHeight: 0 }}>{children}</div>
+      <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
+        {children}
+      </div>
     </article>
   );
 }

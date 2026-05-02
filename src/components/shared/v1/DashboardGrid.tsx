@@ -29,7 +29,7 @@ const ROW_HEIGHT = 56;
 const GRID_MARGIN_Y = 16;
 const MOBILE_BREAKPOINT = 768;
 const DRAG_HANDLE_CLASS = "compass-drag-handle";
-const CONTENT_FIT_PADDING = 8;
+const CONTENT_FIT_PADDING = 24;
 
 /**
  * DashboardGrid
@@ -89,13 +89,14 @@ export function DashboardGrid({ cells }: Props) {
       const node = cellRefs.current.get(id);
       if (!node) continue;
       const size = sizeFor(id);
-      const measured = node.querySelector("article") ?? node;
+      const article = node.querySelector("article") as HTMLElement | null;
+      const measured = (article ?? node) as HTMLElement;
       const visibleHeight = Math.ceil(measured.getBoundingClientRect().height);
-      const scrollHeight = Math.ceil((measured as HTMLElement).scrollHeight);
+      const contentHeight = Math.ceil(measureNaturalHeight(measured));
 
       nextRows[id] =
-        scrollHeight > visibleHeight + 1
-          ? Math.max(size.minH, rowsForPixelHeight(scrollHeight + CONTENT_FIT_PADDING))
+        contentHeight > visibleHeight + 1
+          ? Math.max(size.minH, rowsForPixelHeight(contentHeight + CONTENT_FIT_PADDING))
           : size.minH;
     }
 
@@ -292,4 +293,28 @@ export function DashboardGrid({ cells }: Props) {
 
 function rowsForPixelHeight(height: number) {
   return Math.max(1, Math.ceil((height + GRID_MARGIN_Y) / (ROW_HEIGHT + GRID_MARGIN_Y)));
+}
+
+/**
+ * True natural height of an element, including content that flex layout has
+ * collapsed visually. Walks into the children's scrollHeights instead of just
+ * reading the parent's scrollHeight (which is constrained by flex sizing).
+ */
+function measureNaturalHeight(el: HTMLElement): number {
+  const cs = window.getComputedStyle(el);
+  let total = parseFloat(cs.paddingTop || "0") + parseFloat(cs.paddingBottom || "0");
+  const gap = parseFloat(cs.rowGap || cs.gap || "0") || 0;
+  const children = Array.from(el.children) as HTMLElement[];
+  if (children.length === 0) return el.scrollHeight;
+  for (const child of children) {
+    // Recurse into nested flex containers so deep content is captured.
+    const childCS = window.getComputedStyle(child);
+    if (childCS.display === "flex" || childCS.display === "inline-flex") {
+      total += measureNaturalHeight(child);
+    } else {
+      total += child.scrollHeight;
+    }
+  }
+  total += gap * (children.length - 1);
+  return Math.max(total, el.scrollHeight);
 }

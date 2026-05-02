@@ -39,11 +39,13 @@ export function WhatYouOwnWidget() {
   return (
     <WidgetCard
       title="What You Own in 3 Sentences"
-      rationale="Surfaced because you're new to investing — a plain-English summary of your portfolio."
+      rationale="A plain-English summary of your portfolio."
       hideHeader
     >
       <div style={shell}>
+        <div style={accentBar} aria-hidden />
         <div style={copyStack}>
+          <span style={eyebrow}>What you own</span>
           {sentences.map((sentence, index) => (
             <p key={sentence} style={index === 0 ? leadSentence : sentenceStyle}>
               {sentence}
@@ -62,17 +64,38 @@ function formatPct(value: number) {
 const shell: React.CSSProperties = {
   minHeight: "100%",
   display: "flex",
-  alignItems: "center",
+  alignItems: "stretch",
+  gap: "var(--space-4)",
   padding: "var(--space-6)",
   border: "1px solid var(--border-subtle)",
   borderRadius: 12,
-  background: "var(--bg-inset)",
+  background:
+    "linear-gradient(180deg, var(--bg-inset) 0%, var(--bg-elevated) 100%)",
+  position: "relative",
+  overflow: "hidden",
+};
+
+const accentBar: React.CSSProperties = {
+  width: 3,
+  borderRadius: 999,
+  background:
+    "linear-gradient(180deg, var(--gold-bright), var(--gold-primary), transparent)",
+  flexShrink: 0,
 };
 
 const copyStack: React.CSSProperties = {
   display: "grid",
-  gap: "var(--space-6)",
+  gap: "var(--space-3)",
   width: "100%",
+};
+
+const eyebrow: React.CSSProperties = {
+  fontFamily: "var(--font-body)",
+  fontSize: 11,
+  fontWeight: 600,
+  letterSpacing: 1.4,
+  textTransform: "uppercase",
+  color: "var(--gold-primary)",
 };
 
 const leadSentence: React.CSSProperties = {
@@ -82,6 +105,7 @@ const leadSentence: React.CSSProperties = {
   fontSize: 24,
   fontWeight: 300,
   lineHeight: 1.25,
+  marginBottom: "var(--space-2)",
 };
 
 const sentenceStyle: React.CSSProperties = {
