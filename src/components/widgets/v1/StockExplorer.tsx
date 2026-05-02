@@ -133,13 +133,13 @@ export function StockExplorer() {
           <div style={{ display: "grid", gap: "var(--space-2)" }}>
             <p style={sectionLabel}>Browse stocks you do not own yet</p>
             <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={draft}
                 onChange={(e) => void handleSearch(e.target.value)}
                 placeholder="Search ticker or company"
                 aria-label="Search ticker or company"
-                className="h-9 border-border/40 bg-secondary/40 pl-9 text-[13px] focus-visible:ring-primary/50"
+                className="glass-input h-10 rounded-full border-0 pl-9 text-[13px] text-foreground placeholder:text-muted-foreground/70 focus-visible:ring-0"
               />
             </div>
           </div>

@@ -1,11 +1,10 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { GraduationCap, Trash2, RotateCcw, BookOpen, Microscope } from "lucide-react";
+import { GraduationCap, Trash2, RotateCcw, BookOpen, Microscope, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { useEducationChat } from "@/hooks/useEducationChat";
 import { cn } from "@/lib/utils";
 import { TopicCards } from "./TopicCards";
@@ -138,8 +137,9 @@ export function EducationChat() {
       {/* Input — sticky bottom */}
       <Card className="glass-surface border-border/30 shadow-none">
         <CardContent className="p-3">
-          <div className="flex items-center gap-2">
-            <Input
+          <div className="glass-input flex items-center gap-2 rounded-full p-1.5 pl-4 pr-1.5">
+            <Sparkles className="h-4 w-4 shrink-0 text-primary/70" />
+            <input
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={onKey}
@@ -149,13 +149,14 @@ export function EducationChat() {
                   : "Ask anything about money, investing, or markets…"
               }
               disabled={isLoading}
-              className="h-10 border-border/40 bg-secondary/40 text-[14px] focus-visible:ring-primary/50"
+              aria-label="Ask Sage"
+              className="flex-1 bg-transparent text-[14px] text-foreground placeholder:text-muted-foreground/70 outline-none disabled:opacity-50"
             />
             <Button
-              size="default"
+              size="sm"
               onClick={() => send(draft)}
               disabled={isLoading || !draft.trim()}
-              className="h-10 bg-primary px-4 text-primary-foreground hover:bg-primary/90"
+              className="h-9 rounded-full bg-primary px-4 text-primary-foreground shadow-glow-gold hover:bg-primary/90 disabled:opacity-50 disabled:shadow-none"
             >
               Ask
             </Button>
