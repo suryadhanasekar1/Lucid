@@ -89,7 +89,6 @@ export function ConnectClient() {
   return (
     <main style={shell}>
       <section style={{ maxWidth: 560 }}>
-        <p style={eyebrow}>Lucid</p>
         <h1 style={hero}>Connect your brokerage.</h1>
         <p style={helper}>
           Lucid uses SnapTrade to read your real holdings — never to make trades. If

@@ -57,21 +57,10 @@ export function SurveyShell({ step, children }: Props) {
           style={{
             display: "flex",
             alignItems: "center",
-            justifyContent: "space-between",
+            justifyContent: "flex-end",
             marginBottom: "var(--space-12)",
           }}
         >
-          <span
-            style={{
-              fontFamily: "var(--font-body)",
-              fontSize: 13,
-              letterSpacing: "0.04em",
-              textTransform: "uppercase",
-              color: "var(--gold-primary)",
-            }}
-          >
-            Lucid
-          </span>
           <ProgressDots total={totalSteps} index={progressIndex} />
         </header>
 

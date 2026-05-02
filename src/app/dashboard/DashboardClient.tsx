@@ -62,7 +62,6 @@ export function DashboardClient() {
     return (
       <main style={shell}>
         <section style={{ maxWidth: 560 }}>
-          <p style={eyebrow}>Lucid</p>
           <h1 style={hero}>Take the 90-second survey first.</h1>
           <p style={helper}>
             Lucid needs your goals, timeline, and pain threshold before it can build a
@@ -105,7 +104,6 @@ export function DashboardClient() {
         }}
       >
         <div>
-          <p style={eyebrow}>Lucid</p>
           <h1 style={hero}>
             Built around{" "}
             <span style={{ color: "var(--gold-primary)" }}>
