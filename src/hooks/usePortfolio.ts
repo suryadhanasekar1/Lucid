@@ -32,7 +32,7 @@ async function fetchSnaptrade(userId: string, userSecret: string): Promise<Holdi
 
 async function fetchSample(): Promise<Holding[]> {
   try {
-    const res = await fetch("/data/sample-portfolio.json", { cache: "force-cache" });
+    const res = await fetch("/data/sample-portfolio.json", { cache: "no-store" });
     if (!res.ok) return [];
     const data = (await res.json()) as SamplePortfolioFile;
     return data.holdings ?? [];

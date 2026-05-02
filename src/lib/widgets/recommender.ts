@@ -3,14 +3,12 @@ import { WIDGETS } from "./registry";
 
 const SIMPLE_WIDGET_IDS = new Set([
   "total_value",
-  "health_score",
   "portfolio_history",
   "stock_explorer",
 ]);
 
 const ADVANCED_WIDGET_IDS = new Set([
   "total_value",
-  "health_score",
   "portfolio_history",
   "stock_explorer",
   "mutual_fund_xray",

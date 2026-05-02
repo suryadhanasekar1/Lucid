@@ -19,7 +19,7 @@ export default function RootLayout({
       lang="en"
       className={GeistSans.variable}
     >
-      <body>
+      <body style={{ margin: 0, background: "var(--bg-base, #0A0A0B)" }}>
         {children}
         <CircuitBreakerModal />
       </body>

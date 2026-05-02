@@ -1,34 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useUserStore } from "@/stores/userStore";
-import { getArchetype } from "@/lib/portfolio/calculations";
-import type { UserProfile } from "@/types";
 
 export default function Page() {
-  const router = useRouter();
-  const setProfile = useUserStore((s) => s.setProfile);
-
-  const openDemoDashboard = () => {
-    setProfile(buildDemoProfile());
-    router.push("/dashboard");
-  };
-
   return (
     <main
+      className="home-landing"
       style={{
         minHeight: "100dvh",
+        width: "100%",
         background: "var(--bg-base, #0A0A0B)",
         color: "var(--text-primary, #F5F5F0)",
-        padding: "clamp(32px, 8vh, 64px) clamp(20px, 5vw, 48px)",
+        padding: "clamp(24px, 7vh, 64px) clamp(18px, 5vw, 56px)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        overflow: "hidden",
+        overflowX: "hidden",
       }}
     >
-      <section style={{ maxWidth: 780, width: "100%" }}>
+      <section style={{ maxWidth: 780, width: "100%", margin: 0 }}>
         <p
           style={{
             fontFamily: "var(--font-body)",
@@ -43,6 +33,7 @@ export default function Page() {
         </p>
 
         <h1
+          className="home-hero-title"
           style={{
             fontFamily: "var(--font-display)",
             fontWeight: 300,
@@ -72,15 +63,11 @@ export default function Page() {
           translated for beginners.
         </p>
 
-        <div style={{ display: "flex", gap: "var(--space-3)", flexWrap: "wrap", alignItems: "center" }}>
-          <button
-            type="button"
-            onClick={openDemoDashboard}
-            style={primaryCta}
-          >
+        <div className="home-cta-row" style={ctaRow}>
+          <Link className="home-cta" href="/dashboard?demo=1" style={primaryCta}>
             Open sample dashboard
-          </button>
-          <Link href="/onboarding" style={secondaryCta}>
+          </Link>
+          <Link className="home-cta" href="/onboarding" style={secondaryCta}>
             Take 90-second survey
           </Link>
         </div>
@@ -89,30 +76,19 @@ export default function Page() {
   );
 }
 
-function buildDemoProfile(): UserProfile {
-  const riskScore = 35;
-  return {
-    answers: {
-      experience: "beginner",
-      goal: "build long-term savings",
-      timelineYears: 10,
-      painThreshold: 16_250,
-      sleepTestStartingValue: 25_000,
-      worry: "market_crashes",
-      checkIn: "weekly",
-      lifeStage: "early_career",
-      uiMode: "essentials",
-    },
-    uiMode: "essentials",
-    riskScore,
-    archetype: getArchetype(riskScore),
-    completedAt: new Date().toISOString(),
-  };
-}
+const ctaRow: React.CSSProperties = {
+  display: "flex",
+  gap: "var(--space-3)",
+  flexWrap: "wrap",
+  alignItems: "center",
+};
 
 const primaryCta: React.CSSProperties = {
-  display: "inline-block",
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
   maxWidth: "100%",
+  minHeight: 48,
   padding: "14px 28px",
   borderRadius: 999,
   background: "var(--gold-primary, #C9A961)",
@@ -124,6 +100,7 @@ const primaryCta: React.CSSProperties = {
   textAlign: "center",
   border: "1px solid transparent",
   cursor: "pointer",
+  lineHeight: 1.2,
 };
 
 const secondaryCta: React.CSSProperties = {
