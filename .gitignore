@@ -31,7 +31,3 @@ npm-debug.log*
 *.pem
 *.key
 secrets/
-
-# Master spec is a working document containing live API keys at the bottom —
-# never commit it. Operators clone it locally only.
-COMPASS_MASTER_SPEC*.md
