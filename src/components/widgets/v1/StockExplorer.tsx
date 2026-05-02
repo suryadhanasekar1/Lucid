@@ -6,6 +6,9 @@ import { Search, TrendingUp } from "lucide-react";
 import { usePortfolio } from "@/hooks/usePortfolio";
 import { useStockExplorer } from "@/hooks/useStockExplorer";
 import { WidgetCard } from "@/components/shared/v1/WidgetCard";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 const PERIODS = [
   ["1mo", "1M"],
@@ -106,25 +109,27 @@ export function StockExplorer() {
           </div>
         </div>
 
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="sm"
           onClick={() => setExploreOpen((open) => !open)}
-          style={exploreToggle}
+          className="h-8 self-start text-[12px] text-primary hover:bg-primary/10 hover:text-primary"
         >
           {exploreOpen ? "Hide stock search" : "Explore more stocks"}
-        </button>
+        </Button>
 
         {exploreOpen && (
           <div style={{ display: "grid", gap: "var(--space-2)" }}>
             <p style={sectionLabel}>Browse stocks you do not own yet</p>
-            <div style={searchShell}>
-              <Search size={16} color="var(--text-tertiary)" />
-              <input
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
                 value={draft}
                 onChange={(e) => void handleSearch(e.target.value)}
                 placeholder="Search ticker or company"
                 aria-label="Search ticker or company"
-                style={searchInput}
+                className="h-9 border-border/40 bg-secondary/40 pl-9 text-[13px] focus-visible:ring-primary/50"
               />
             </div>
           </div>
@@ -149,22 +154,27 @@ export function StockExplorer() {
           </div>
         )}
 
-        <div style={periodRow} aria-label="Price chart period">
-          {PERIODS.map(([value, label]) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => explorer.setPeriod(value)}
-              style={{
-                ...periodButton,
-                color: explorer.period === value ? "var(--bg-base)" : "var(--text-secondary)",
-                background: explorer.period === value ? "var(--gold-primary)" : "transparent",
-                borderColor: explorer.period === value ? "var(--gold-primary)" : "var(--border-default)",
-              }}
-            >
-              {label}
-            </button>
-          ))}
+        <div className="flex flex-wrap gap-1.5" aria-label="Price chart period">
+          {PERIODS.map(([value, label]) => {
+            const active = explorer.period === value;
+            return (
+              <Button
+                key={value}
+                type="button"
+                size="sm"
+                variant={active ? "default" : "outline"}
+                onClick={() => explorer.setPeriod(value)}
+                className={cn(
+                  "h-7 min-w-[44px] px-3 text-[11px] font-medium",
+                  active
+                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                    : "border-border/40 bg-secondary/30 text-muted-foreground hover:bg-secondary hover:text-foreground",
+                )}
+              >
+                {label}
+              </Button>
+            );
+          })}
         </div>
 
         <div style={chartShell}>

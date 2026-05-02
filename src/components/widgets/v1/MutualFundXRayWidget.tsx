@@ -5,6 +5,8 @@ import { usePortfolio } from "@/hooks/usePortfolio";
 import { useFundXRay } from "@/hooks/useFundXRay";
 import { WidgetCard } from "@/components/shared/v1/WidgetCard";
 import { Skeleton } from "@/components/shared/v1/Skeleton";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { WIDGETS_BY_ID } from "@/lib/widgets/registry";
 import { formatPct } from "@/lib/utils";
 
@@ -45,23 +47,21 @@ export function MutualFundXRayWidget() {
           {tickers.map((t) => {
             const selected = t === active;
             return (
-              <button
+              <Button
                 key={t}
                 type="button"
+                size="sm"
+                variant={selected ? "default" : "outline"}
                 onClick={() => onPick(t)}
-                style={{
-                  padding: "6px 12px",
-                  borderRadius: 999,
-                  fontFamily: "var(--font-mono)",
-                  fontSize: 12,
-                  background: selected ? "var(--gold-glow)" : "transparent",
-                  border: `1px solid ${selected ? "var(--border-emphasis)" : "var(--border-default)"}`,
-                  color: selected ? "var(--text-primary)" : "var(--text-secondary)",
-                  cursor: "pointer",
-                }}
+                className={cn(
+                  "h-7 rounded-full px-3 font-mono text-[12px]",
+                  selected
+                    ? "border border-primary/50 bg-primary/15 text-foreground hover:bg-primary/20"
+                    : "border-border/40 bg-transparent text-muted-foreground hover:bg-secondary",
+                )}
               >
                 {t}
-              </button>
+              </Button>
             );
           })}
         </div>

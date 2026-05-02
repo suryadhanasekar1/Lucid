@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { usePortfolio } from "@/hooks/usePortfolio";
 import { WidgetCard } from "@/components/shared/v1/WidgetCard";
 import { ExplainTooltip } from "@/components/shared/v1/ExplainTooltip";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { WIDGETS_BY_ID } from "@/lib/widgets/registry";
 import { annualFeeDrag, capGainsTaxOnSale } from "@/lib/portfolio/tax";
 import { formatUSD, formatPct } from "@/lib/utils";
@@ -62,41 +63,42 @@ export function CostTaxReceiptWidget() {
           />
         </div>
 
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            fontFamily: "var(--font-body)",
-            fontSize: 13,
-          }}
-        >
-          <thead>
-            <tr style={{ color: "var(--text-tertiary)", textAlign: "left" }}>
-              <th style={th}>Holding</th>
-              <th style={{ ...th, textAlign: "right" }}>ER</th>
-              <th style={{ ...th, textAlign: "right" }}>Fee/yr</th>
-              <th style={{ ...th, textAlign: "right" }}>Tax if sold</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table className="text-[13px]">
+          <TableHeader>
+            <TableRow className="border-border/30 hover:bg-transparent">
+              <TableHead className="h-8 px-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                Holding
+              </TableHead>
+              <TableHead className="h-8 px-2 text-right text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                ER
+              </TableHead>
+              <TableHead className="h-8 px-2 text-right text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                Fee/yr
+              </TableHead>
+              <TableHead className="h-8 px-2 text-right text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                Tax if sold
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {rows.slice(0, 6).map((r) => (
-              <tr key={r.holding.ticker} style={{ borderTop: "1px solid var(--border-subtle)" }}>
-                <td style={td}>
-                  <span style={{ fontFamily: "var(--font-mono)", color: "var(--gold-primary)" }}>{r.holding.ticker}</span>
-                </td>
-                <td style={{ ...td, textAlign: "right", fontFamily: "var(--font-mono)" }}>
+              <TableRow key={r.holding.ticker} className="border-border/20 hover:bg-secondary/30">
+                <TableCell className="px-2 py-2">
+                  <span className="font-mono text-primary">{r.holding.ticker}</span>
+                </TableCell>
+                <TableCell className="px-2 py-2 text-right font-mono tabular-nums">
                   {r.holding.type === "stock" || r.holding.type === "cash" ? "—" : formatPct(r.er, 2)}
-                </td>
-                <td style={{ ...td, textAlign: "right", fontFamily: "var(--font-mono)" }}>
+                </TableCell>
+                <TableCell className="px-2 py-2 text-right font-mono tabular-nums">
                   {r.fee > 0 ? formatUSD(Math.round(r.fee)) : "—"}
-                </td>
-                <td style={{ ...td, textAlign: "right", fontFamily: "var(--font-mono)" }}>
+                </TableCell>
+                <TableCell className="px-2 py-2 text-right font-mono tabular-nums">
                   {r.tax > 0 ? formatUSD(Math.round(r.tax)) : "—"}
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
 
         <ExplainTooltip topic="cost_tax_receipt" label="What's an expense ratio?" />
       </div>
@@ -155,16 +157,3 @@ const muted: React.CSSProperties = {
   margin: 0,
 };
 
-const th: React.CSSProperties = {
-  fontFamily: "var(--font-body)",
-  fontSize: 11,
-  letterSpacing: "0.04em",
-  textTransform: "uppercase",
-  fontWeight: 500,
-  padding: "8px 6px",
-};
-
-const td: React.CSSProperties = {
-  padding: "8px 6px",
-  color: "var(--text-secondary)",
-};

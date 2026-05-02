@@ -8,6 +8,7 @@ import { useHealthScore } from "@/hooks/useHealthScore";
 import { useRiskRebalance } from "@/hooks/useRiskRebalance";
 import { motionDuration, usePrefersReducedMotion } from "@/lib/a11y";
 import { formatUSD } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export function HeaderHealthGauge() {
   const { score, components } = useHealthScore();
@@ -67,9 +68,14 @@ export function HeaderHealthGauge() {
                 <span style={{ ...panelValue, color: riskColor }}>{riskScore}/100</span>
               </div>
               <p style={riskText}>{riskMessage(analysis.status)}</p>
-              <button type="button" onClick={rebalance} style={rebalanceButton}>
+              <Button
+                type="button"
+                size="sm"
+                onClick={rebalance}
+                className="h-8 w-full bg-primary text-primary-foreground shadow-glow-gold hover:bg-primary/90"
+              >
                 Rebalance
-              </button>
+              </Button>
             </div>
             <div style={{ display: "grid", gap: "var(--space-2)", marginTop: "var(--space-3)" }}>
               {segments.map((segment) => (
